@@ -1,52 +1,46 @@
-# Deploy to Vercel
+# Deploy Apex Workspace (Netlify)
 
-## Local Development Setup (New Supabase Project)
+## Local Development
 
-1. Go to [supabase.com](https://supabase.com) → **New Project**
-2. Once created, go to **Settings → API** and copy:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role** key → `SUPABASE_SERVICE_ROLE_KEY` (keep secret)
-3. Paste those into `.env.local` in this project
-4. Go to **SQL Editor** and run the schema SQL below (under "Run Supabase Schema")
-5. Go to **Authentication → Users → Invite User** to create Michael and Kenny's accounts
-6. For local dev, go to **Authentication → URL Configuration** and add:
+1. Create a project at [supabase.com](https://supabase.com) → **New Project**
+2. **Settings → API** — copy into `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (optional; keep secret)
+3. **SQL Editor** — run the schema SQL below
+4. **Authentication → Users → Invite User** — invite Michael and Kenny
+5. **Authentication → URL Configuration** (local):
    - **Site URL**: `http://localhost:3000`
    - **Redirect URLs**: `http://localhost:3000/auth/callback`
-7. Run `npm run dev` and sign in at `/login`
+6. Run `npm install` then `npm run dev`
 
-## Prerequisites
+## Netlify Deployment
 
-- GitHub repo: push this codebase to `github.com/your-username/apex-workspace`
-- Supabase project created at [supabase.com](https://supabase.com) (free tier)
-- All environment variables from `.env.local` ready
+Netlify is connected to GitHub (`THCKing247/Apex-Workspace`).
 
-## Steps
+1. **Netlify** → **Add new site** → import **Apex-Workspace**
+2. Build settings (auto-detected via `netlify.toml`):
+   - **Build command:** `npm run build`
+   - Uses **@netlify/plugin-nextjs**
+3. **Site settings → Environment variables** — add every value from `.env.local`
+4. Deploy
 
-1. Go to [vercel.com](https://vercel.com) → **New Project** → **Import from GitHub**
-2. Select the `apex-workspace` repository
-3. In **Environment Variables**, add every value from `.env.local`
-4. Click **Deploy**
+## After Netlify Deploy
 
-## After Deployment
+### Supabase Auth URLs
 
-### Configure Supabase Auth URLs
+**Authentication → URL Configuration**:
 
-Go to **Supabase → Authentication → URL Configuration** and set:
-
-- **Site URL**: `https://apex-workspace.vercel.app`
-- **Redirect URLs**: `https://apex-workspace.vercel.app/auth/callback`
+- **Site URL**: your Netlify URL (e.g. `https://apex-workspace.netlify.app`) or `https://workspace.apextsgroup.com`
+- **Redirect URLs**: same base + `/auth/callback`
 
 ### Create User Accounts
 
-Go to **Supabase → Authentication → Users → Invite User**
+**Authentication → Users → Invite User** — invite-only, no public sign-up.
 
-Invite yourself (Michael) and Kenny — you'll each get an email to set a password.
-No public sign-up is available (intentional).
+## Supabase Schema
 
-### Run Supabase Schema
-
-In the **Supabase SQL Editor**, run this SQL to create the required tables:
+Run in **SQL Editor**:
 
 ```sql
 -- Leads table
@@ -84,34 +78,23 @@ create policy "Auth users can do everything on projects"
   on projects for all using (auth.role() = 'authenticated');
 ```
 
-## Environment Variables Reference
+## Custom Domain (workspace.apextsgroup.com)
 
-| Variable | Where to Get It |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Settings → API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API |
-| `GITHUB_TOKEN` | GitHub → Settings → Developer Settings → Personal Access Tokens |
-| `META_ACCESS_TOKEN` | Meta Business Suite → Business Settings → System Users → Generate Token |
-| `META_PAGE_ID_APEX` | Apex TSG Facebook Page → About → Page ID |
-| `META_PAGE_ID_BUILDVANCE` | Buildvance Facebook Page → About → Page ID |
-| `META_PAGE_ID_BRAIK` | Braik Facebook Page → About → Page ID |
-| `HUNTER_API_KEY` | hunter.io → Dashboard → API Key |
-| `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys |
-| `GOOGLE_CLIENT_ID` | console.cloud.google.com → Credentials → OAuth 2.0 Client |
-| `GOOGLE_CLIENT_SECRET` | Same as above |
-| `GOOGLE_REFRESH_TOKEN` | developers.google.com/oauthplayground → Gmail API v1 → exchange code |
+1. **Netlify** → Site → **Domain management** → add `workspace.apextsgroup.com`
+2. At your DNS provider, add the record Netlify shows (usually CNAME `workspace` → your Netlify subdomain)
+3. Update Supabase auth URLs to `https://workspace.apextsgroup.com` and `/auth/callback`
 
-## Custom Domain (apextsgroup.com)
+## Environment Variables
 
-After deploying to Vercel:
+| Variable | Required | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Database + auth |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Client access |
+| `GITHUB_TOKEN` | No | Projects GitHub sync |
+| `META_ACCESS_TOKEN` | No | Social page |
+| `META_PAGE_ID_*` | No | Social page |
+| `HUNTER_API_KEY` | No | Pipeline prospecting |
+| `ANTHROPIC_API_KEY` | No | AI Assistant |
+| `GOOGLE_*` | No | Inbox |
 
-1. **Vercel** → Project → **Settings → Domains**
-2. Add `workspace.apextsgroup.com` (recommended subdomain) or `apextsgroup.com`
-3. At your domain registrar (where apextsgroup.com is managed), add the DNS record Vercel shows:
-   - Subdomain: `CNAME` → `workspace` → `cname.vercel-dns.com`
-   - Root domain: follow Vercel’s A/CNAME instructions for apex domains
-4. Wait for DNS propagation (often 5–30 minutes)
-5. Update **Supabase → Authentication → URL Configuration**:
-   - **Site URL**: `https://workspace.apextsgroup.com`
-   - **Redirect URLs**: `https://workspace.apextsgroup.com/auth/callback`
+Only Supabase is required to run the core app. All other integrations are optional — add env vars when you want them.

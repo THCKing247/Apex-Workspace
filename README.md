@@ -1,50 +1,33 @@
 # Apex Workspace
 
-Internal business dashboard for **Apex Technical Solutions Group** — a custom software and web development company based in Tampa Bay, FL.
+Internal business HQ for **Apex Technical Solutions Group** — dashboard, pipeline, projects, inbox, social, and AI assistant in one place.
 
-Built for Michael (CTO) and Kenny (COO) to track leads, projects, client communication, social analytics, and AI-assisted workflows from a single workspace.
+Built for Michael (CTO) and Kenny (COO). Invite-only access.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 14 (App Router) |
-| Backend | Supabase (Postgres + Auth + RLS) |
+| Framework | Next.js (App Router) |
+| Database & Auth | Supabase (your project) |
+| Hosting | Netlify |
 | Styling | Tailwind CSS |
-| Deployment | Vercel |
-| AI | Anthropic Claude (claude-sonnet-4-6) |
-| Drag & Drop | @hello-pangea/dnd |
-| Charts | Recharts |
-| Icons | Lucide React |
-| Toasts | Sonner |
 
-## Features
-
-- **Dashboard** — Business health overview: open leads, active projects, stat cards
-- **Pipeline** — Kanban lead tracking (Open → Contacted → Proposal → Closed) with drag-and-drop
-- **Prospecting** — Hunter.io domain search + email verification integrated into Pipeline
-- **Projects** — Active project tracking with live GitHub data (issues, PRs, commits)
-- **AI Assistant** — Claude-powered business assistant pre-loaded with Apex TSG context
-- **Social** — Meta Graph API insights for Apex TSG, Buildvance, and Braik Facebook pages
-- **Inbox** — Gmail integration with client thread filtering
-- **Settings** — Integration status dashboard and account management
+Optional integrations (GitHub, Meta, Gmail, Hunter, Anthropic) activate only when you add their API keys to environment variables.
 
 ## Getting Started
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. Copy your API keys into `.env.local` (see `DEPLOYMENT.md`)
-3. Run the SQL schema in Supabase SQL Editor (see `DEPLOYMENT.md`)
-4. Invite users in Supabase → Authentication → Users
+1. Create a Supabase project and add keys to `.env.local`
+2. Run the SQL schema in `DEPLOYMENT.md`
+3. Invite users in Supabase → Authentication
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/login`.
-
-Users are created manually in Supabase (no public sign-up).
+Open [http://localhost:3000](http://localhost:3000) — you'll land on the Apex Workspace login, then the dashboard.
 
 ## Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step Vercel deployment instructions, Supabase schema setup, and user account creation.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for Netlify setup, Supabase schema, and custom domain (`workspace.apextsgroup.com`).
