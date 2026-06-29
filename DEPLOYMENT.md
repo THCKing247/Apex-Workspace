@@ -101,3 +101,17 @@ create policy "Auth users can do everything on projects"
 | `GOOGLE_CLIENT_ID` | console.cloud.google.com → Credentials → OAuth 2.0 Client |
 | `GOOGLE_CLIENT_SECRET` | Same as above |
 | `GOOGLE_REFRESH_TOKEN` | developers.google.com/oauthplayground → Gmail API v1 → exchange code |
+
+## Custom Domain (apextsgroup.com)
+
+After deploying to Vercel:
+
+1. **Vercel** → Project → **Settings → Domains**
+2. Add `workspace.apextsgroup.com` (recommended subdomain) or `apextsgroup.com`
+3. At your domain registrar (where apextsgroup.com is managed), add the DNS record Vercel shows:
+   - Subdomain: `CNAME` → `workspace` → `cname.vercel-dns.com`
+   - Root domain: follow Vercel’s A/CNAME instructions for apex domains
+4. Wait for DNS propagation (often 5–30 minutes)
+5. Update **Supabase → Authentication → URL Configuration**:
+   - **Site URL**: `https://workspace.apextsgroup.com`
+   - **Redirect URLs**: `https://workspace.apextsgroup.com/auth/callback`
