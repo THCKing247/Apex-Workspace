@@ -1,17 +1,16 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Teko, Inter, JetBrains_Mono } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
+// FONT USAGE RULE:
+// - Headers, section labels, nav items, ALL numeric/stat values: font-display (Teko) — UPPERCASE for labels
+// - Body copy, form inputs, notes content, email text: font-sans (Inter)
+// - Code-like content (repo names, technical IDs): font-mono (JetBrains Mono)
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+const teko = Teko({ subsets: ['latin'], weight: ['500', '600'], variable: '--font-teko' })
+const inter = Inter({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-inter' })
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains' })
 
 export const metadata: Metadata = {
   title: 'Apex Workspace',
@@ -24,16 +23,20 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col" style={{ backgroundColor: '#0f1117' }}>
+    <html
+      lang="en"
+      className={`${teko.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
         {children}
         <Toaster
           position="bottom-right"
           toastOptions={{
             style: {
-              backgroundColor: '#1a1d2e',
-              border: '1px solid #1e2330',
-              color: '#fff',
+              backgroundColor: '#10204a',
+              border: '1px solid rgba(91,155,255,0.22)',
+              color: '#f4f8ff',
+              fontFamily: 'var(--font-inter)',
             },
           }}
         />

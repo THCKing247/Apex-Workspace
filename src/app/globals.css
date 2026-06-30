@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-base-900: #0d1b3d;
+  --color-base-800: #16265a;
+  --color-base-700: #10204a;
+  --color-base-border: rgba(91,155,255,0.22);
+  --color-base-border-strong: rgba(91,155,255,0.35);
+
+  --color-buildvance: #00E08A;
+  --color-buildvance-dim: rgba(0,224,138,0.1);
+  --color-buildvance-border: rgba(0,224,138,0.35);
+  --color-buildvance-bg: linear-gradient(180deg,#0e2b22 0%,#0a221b 100%);
+
+  --color-braik: #FF7A33;
+  --color-braik-dim: rgba(255,122,51,0.1);
+  --color-braik-border: rgba(255,122,51,0.35);
+  --color-braik-bg: linear-gradient(180deg,#2e1c10 0%,#26170c 100%);
+
+  --color-apex: #5B9BFF;
+  --color-apex-dim: rgba(91,155,255,0.1);
+  --color-apex-border: rgba(91,155,255,0.3);
+  --color-apex-bg: linear-gradient(180deg,#16265a 0%,#10204a 100%);
+
+  --color-ink-primary: #f4f8ff;
+  --color-ink-secondary: #7d9cd9;
+  --color-ink-muted: #5f73a3;
+  --color-ink-disabled: #3d4f87;
+
+  --font-display: var(--font-teko);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #0d1b3d;
+  --foreground: #f4f8ff;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+.card-depth {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.circuit-bg {
+  position: relative;
+}
+
+.circuit-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.14;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 600'%3E%3Cpath d='M0,80 L180,80 L180,30 L420,30 M420,30 L420,140 L620,140 M180,80 L180,200 L60,200 L60,340 M620,140 L620,40 L900,40 M0,420 L260,420 L260,520 L520,520 M520,520 L520,380 L780,380 L780,500 L1000,500 M340,200 L340,320 L520,320 M780,380 L780,260 L600,260' fill='none' stroke='%235B9BFF' stroke-width='1.5'/%3E%3Ccircle cx='180' cy='80' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='420' cy='30' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='620' cy='140' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='60' cy='340' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='260' cy='520' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='780' cy='500' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='340' cy='320' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='600' cy='260' r='3' fill='%235B9BFF'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.circuit-bg > * {
+  position: relative;
+  z-index: 1;
 }

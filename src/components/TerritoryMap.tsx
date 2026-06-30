@@ -43,7 +43,14 @@ export default function TerritoryMap({ points }: TerritoryMapProps) {
     const projection = d3.geoAlbersUsa().scale(1300).translate([width / 2, height / 2])
     const path = d3.geoPath().projection(projection)
 
-    fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json')
+    // IMPORTANT: use the UNPROJECTED states-10m.json here, not states-albers-10m.json.
+    // The "-albers-" file ships pre-projected pixel coordinates already fit to a 975x610
+    // viewport with NO projection applied on render. Running d3.geoAlbersUsa() over those
+    // pre-projected coordinates double-projects them, producing scattered crisscrossing
+    // lines instead of state shapes. Using the raw (unprojected, lat/lng-based) topology
+    // here means geoAlbersUsa is applied exactly once, consistently, for both the state
+    // paths AND the lat/lng dot markers below -- so everything lines up on the same map.
+    fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
       .then((r) => r.json())
       .then((us: Topology<{ states: GeometryCollection<{ name: string }> }>) => {
         const states = topojson.feature(us, us.objects.states)

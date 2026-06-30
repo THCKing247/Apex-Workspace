@@ -16,44 +16,63 @@ import TerritoryMap from '@/components/TerritoryMap'
 export const metadata = { title: 'Dashboard — Apex Workspace' }
 export const dynamic = 'force-dynamic'
 
+// Card style helpers
+const apexCard = {
+  background: 'linear-gradient(180deg,#16265a 0%,#10204a 100%)',
+  border: '1px solid rgba(91,155,255,0.3)',
+  borderRadius: 8,
+} as const
+
+const buildvanceCard = {
+  background: 'linear-gradient(180deg,#0e2b22 0%,#0a221b 100%)',
+  border: '1px solid rgba(0,224,138,0.35)',
+  borderRadius: 8,
+} as const
+
+const braikCard = {
+  background: 'linear-gradient(180deg,#2e1c10 0%,#26170c 100%)',
+  border: '1px solid rgba(255,122,51,0.35)',
+  borderRadius: 8,
+} as const
+
 const BRAND_COLOR: Record<string, string> = {
   buildvance: '#00E08A',
   braik: '#FF7A33',
   apex: '#5B9BFF',
 }
 
-function KpiCard({
-  label,
-  value,
-  color,
-  connect,
-}: {
+interface KpiCardProps {
   label: string
   value: string | number
   color?: string
   connect?: string
-}) {
+  cardStyle?: React.CSSProperties
+}
+
+function KpiCard({ label, value, color, connect, cardStyle }: KpiCardProps) {
   return (
-    <div
-      className="rounded-lg border p-3 flex flex-col gap-1"
-      style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-    >
+    <div className="card-depth p-3 flex flex-col gap-1" style={cardStyle ?? apexCard}>
       <p
-        className="text-xs uppercase tracking-widest"
-        style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+        className="uppercase tracking-widest"
+        style={{ fontFamily: 'var(--font-teko)', fontSize: 11, color: '#7d9cd9', letterSpacing: '0.05em' }}
       >
         {label}
       </p>
       <p
-        className="text-xl font-bold"
-        style={{ fontFamily: 'monospace', color: color ?? '#eef2f8' }}
+        className="font-semibold"
+        style={{ fontFamily: 'var(--font-teko)', fontSize: '1.875rem', color: color ?? '#f4f8ff', lineHeight: 1 }}
       >
         {value}
       </p>
       {connect && (
         <span
           className="text-xs px-1.5 py-0.5 rounded self-start"
-          style={{ backgroundColor: '#1a2842', color: '#5d6b85', fontFamily: 'monospace', fontSize: 9 }}
+          style={{
+            backgroundColor: 'rgba(91,155,255,0.1)',
+            color: '#5f73a3',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 9,
+          }}
         >
           {connect}
         </span>
@@ -101,32 +120,35 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div
-      className="min-h-screen space-y-4 p-4"
-      style={{ background: 'linear-gradient(to bottom, #0a0e1a, #070a12)' }}
-    >
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <p
-            className="uppercase tracking-widest text-xs"
-            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+            className="uppercase tracking-widest"
+            style={{ fontFamily: 'var(--font-teko)', fontSize: 11, color: '#5f73a3', letterSpacing: '0.05em' }}
           >
             APEX TSG — HQ
           </p>
           <h1
-            className="text-xl font-bold text-white"
-            style={{ fontFamily: 'monospace' }}
+            className="font-semibold uppercase"
+            style={{ fontFamily: 'var(--font-teko)', fontSize: '2rem', color: '#f4f8ff', lineHeight: 1 }}
           >
             Command center
           </h1>
         </div>
         <div className="flex items-center gap-4 pt-1">
-          <span className="flex items-center gap-1.5 text-xs" style={{ fontFamily: 'monospace', color: '#00E08A' }}>
+          <span
+            className="flex items-center gap-1.5 uppercase tracking-widest"
+            style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#00E08A' }}
+          >
             <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#00E08A' }} />
             buildvance
           </span>
-          <span className="flex items-center gap-1.5 text-xs" style={{ fontFamily: 'monospace', color: '#FF7A33' }}>
+          <span
+            className="flex items-center gap-1.5 uppercase tracking-widest"
+            style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#FF7A33' }}
+          >
             <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#FF7A33' }} />
             braik
           </span>
@@ -136,8 +158,18 @@ export default async function DashboardPage() {
       {/* KPI strip */}
       <div className="grid grid-cols-6 gap-2">
         <KpiCard label="Open Leads" value={openLeads} />
-        <KpiCard label="Buildvance Proj" value={projectsByBrand.buildvance} color="#00E08A" />
-        <KpiCard label="Braik Proj" value={projectsByBrand.braik} color="#FF7A33" />
+        <KpiCard
+          label="Buildvance Proj"
+          value={projectsByBrand.buildvance}
+          color="#00E08A"
+          cardStyle={buildvanceCard}
+        />
+        <KpiCard
+          label="Braik Proj"
+          value={projectsByBrand.braik}
+          color="#FF7A33"
+          cardStyle={braikCard}
+        />
         <KpiCard label="Commits 7d" value="—" connect="add GITHUB_TOKEN" />
         <KpiCard label="Social Reach 7d" value="—" connect="add META_ACCESS_TOKEN" />
         <KpiCard label="Unread" value="—" connect="connect Gmail" />
@@ -145,15 +177,12 @@ export default async function DashboardPage() {
 
       {/* Map + Charts row */}
       <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
-        {/* Territory map */}
-        <div
-          className="rounded-lg border p-4"
-          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-        >
+        {/* Territory map — neutral apex-bg */}
+        <div className="card-depth p-4" style={apexCard}>
           <div className="flex items-center justify-between mb-3">
             <p
-              className="text-xs uppercase tracking-widest"
-              style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+              className="uppercase tracking-widest"
+              style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#7d9cd9', letterSpacing: '0.05em' }}
             >
               Territory map
             </p>
@@ -165,43 +194,34 @@ export default async function DashboardPage() {
               ].map(({ label, color }) => (
                 <span
                   key={label}
-                  className="flex items-center gap-1 text-xs"
-                  style={{ fontFamily: 'monospace', color: '#5d6b85', fontSize: 9 }}
+                  className="flex items-center gap-1 uppercase tracking-widest"
+                  style={{ fontFamily: 'var(--font-teko)', fontSize: 10, color: '#5f73a3' }}
                 >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full inline-block"
-                    style={{ backgroundColor: color }}
-                  />
+                  <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: color }} />
                   {label}
                 </span>
               ))}
             </div>
           </div>
           <TerritoryMap points={mapPoints} />
-          <p className="text-xs mt-2" style={{ color: '#374151', fontFamily: 'monospace', fontSize: 9 }}>
+          <p className="text-xs mt-2" style={{ color: '#3d4f87', fontFamily: 'var(--font-mono)', fontSize: 9 }}>
             Sample markers — wires to leads + braik_targets tables (lat/lng or state).
           </p>
         </div>
 
         {/* Right column: pipeline chart + gauges */}
         <div className="flex flex-col gap-4">
-          <div
-            className="rounded-lg border p-4 flex-1"
-            style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-          >
+          <div className="card-depth p-4 flex-1" style={apexCard}>
             <p
-              className="text-xs uppercase tracking-widest mb-2"
-              style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+              className="uppercase tracking-widest mb-2"
+              style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#7d9cd9', letterSpacing: '0.05em' }}
             >
               Pipeline by unit
             </p>
             <PipelineChart data={pipeline} />
           </div>
 
-          <div
-            className="rounded-lg border p-4"
-            style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-          >
+          <div className="card-depth p-4" style={apexCard}>
             <div className="flex items-center justify-around">
               <Gauge value={socialScore} label="social score" color="#5B9BFF" />
               <Gauge value={closeRate} label="close rate" color="#5B9BFF" />
@@ -210,30 +230,24 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Activity chart */}
-      <div
-        className="rounded-lg border p-4"
-        style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-      >
+      {/* Activity chart — neutral apex-bg */}
+      <div className="card-depth p-4" style={apexCard}>
         <p
-          className="text-xs uppercase tracking-widest mb-3"
-          style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+          className="uppercase tracking-widest mb-3"
+          style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#7d9cd9', letterSpacing: '0.05em' }}
         >
           Activity — 7 days
         </p>
         <ActivityChart data={activity} />
       </div>
 
-      {/* Bottom row */}
+      {/* Bottom row — all neutral apex-bg */}
       <div className="grid grid-cols-3 gap-4">
         {/* Upcoming calendar */}
-        <div
-          className="rounded-lg border p-4"
-          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-        >
+        <div className="card-depth p-4" style={apexCard}>
           <p
-            className="text-xs uppercase tracking-widest mb-3"
-            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+            className="uppercase tracking-widest mb-3"
+            style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#7d9cd9', letterSpacing: '0.05em' }}
           >
             Upcoming — calendar
           </p>
@@ -241,10 +255,16 @@ export default async function DashboardPage() {
             <div className="space-y-2">
               {events.map((ev) => (
                 <div key={ev.id} className="flex items-center justify-between">
-                  <p className="text-xs text-white" style={{ fontFamily: 'monospace' }}>
+                  <p
+                    className="text-sm"
+                    style={{ fontFamily: 'var(--font-teko)', color: '#f4f8ff', fontSize: 15 }}
+                  >
                     {ev.title}
                   </p>
-                  <p className="text-xs" style={{ color: '#5d6b85', fontFamily: 'monospace' }}>
+                  <p
+                    className="text-xs"
+                    style={{ fontFamily: 'var(--font-teko)', color: '#5f73a3', fontSize: 13 }}
+                  >
                     {new Date(ev.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                 </div>
@@ -252,12 +272,18 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs" style={{ color: '#5d6b85', fontFamily: 'monospace' }}>
+              <p className="text-sm" style={{ fontFamily: 'var(--font-teko)', color: '#5f73a3', fontSize: 15 }}>
                 No events synced yet.
               </p>
               <span
-                className="inline-block text-xs px-2 py-1 rounded"
-                style={{ backgroundColor: '#FF7A33', color: '#070a12', fontFamily: 'monospace', fontSize: 9 }}
+                className="inline-block px-2 py-1 rounded uppercase tracking-widest"
+                style={{
+                  backgroundColor: '#FF7A33',
+                  color: '#0d1b3d',
+                  fontFamily: 'var(--font-teko)',
+                  fontSize: 11,
+                  letterSpacing: '0.05em',
+                }}
               >
                 connect calendar
               </span>
@@ -266,13 +292,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Project status */}
-        <div
-          className="rounded-lg border p-4"
-          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-        >
+        <div className="card-depth p-4" style={apexCard}>
           <p
-            className="text-xs uppercase tracking-widest mb-3"
-            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+            className="uppercase tracking-widest mb-3"
+            style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#7d9cd9', letterSpacing: '0.05em' }}
           >
             Project status
           </p>
@@ -282,19 +305,23 @@ export default async function DashboardPage() {
                 <div className="flex items-center gap-2">
                   <span
                     className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: BRAND_COLOR[p.brand] ?? '#5d6b85' }}
+                    style={{ backgroundColor: BRAND_COLOR[p.brand] ?? '#5f73a3' }}
                   />
-                  <p className="text-xs text-white" style={{ fontFamily: 'monospace' }}>
+                  <p
+                    className="text-sm"
+                    style={{ fontFamily: 'var(--font-teko)', color: '#f4f8ff', fontSize: 15 }}
+                  >
                     {p.name}
                   </p>
                 </div>
                 <span
-                  className="text-xs px-1.5 py-0.5 rounded"
+                  className="px-1.5 py-0.5 rounded uppercase tracking-widest"
                   style={{
-                    backgroundColor: `${BRAND_COLOR[p.brand] ?? '#5d6b85'}18`,
-                    color: BRAND_COLOR[p.brand] ?? '#5d6b85',
-                    fontFamily: 'monospace',
-                    fontSize: 9,
+                    backgroundColor: `${BRAND_COLOR[p.brand] ?? '#5f73a3'}18`,
+                    color: BRAND_COLOR[p.brand] ?? '#5f73a3',
+                    fontFamily: 'var(--font-teko)',
+                    fontSize: 10,
+                    letterSpacing: '0.05em',
                   }}
                 >
                   {p.status}
@@ -305,17 +332,14 @@ export default async function DashboardPage() {
         </div>
 
         {/* AI suggestion */}
-        <div
-          className="rounded-lg border p-4"
-          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
-        >
+        <div className="card-depth p-4" style={apexCard}>
           <p
-            className="text-xs uppercase tracking-widest mb-3"
-            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+            className="uppercase tracking-widest mb-3"
+            style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#7d9cd9', letterSpacing: '0.05em' }}
           >
             AI suggestion
           </p>
-          <p className="text-xs" style={{ color: '#8b95ab', fontFamily: 'monospace' }}>
+          <p className="text-sm" style={{ fontFamily: 'var(--font-inter)', color: '#7d9cd9', fontSize: 13 }}>
             Connect Meta + Anthropic keys for post-performance suggestions here.
           </p>
         </div>
