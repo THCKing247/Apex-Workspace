@@ -6,8 +6,13 @@ import {
   LayoutDashboard,
   Kanban,
   GitBranch,
+  Target,
+  Calendar,
   Mail,
   BarChart2,
+  FileText,
+  FolderOpen,
+  Radar,
   Bot,
   Settings,
 } from 'lucide-react'
@@ -16,8 +21,13 @@ const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Pipeline', href: '/pipeline', icon: Kanban },
   { label: 'Projects', href: '/projects', icon: GitBranch },
+  { label: 'Braik Targets', href: '/braik-targets', icon: Target },
+  { label: 'Calendar', href: '/calendar', icon: Calendar },
   { label: 'Inbox', href: '/inbox', icon: Mail },
   { label: 'Social', href: '/social', icon: BarChart2 },
+  { label: 'Notes', href: '/notes', icon: FileText },
+  { label: 'Resources', href: '/resources', icon: FolderOpen },
+  { label: 'Competitors', href: '/competitors', icon: Radar },
   { label: 'AI Assistant', href: '/assistant', icon: Bot },
   { label: 'Settings', href: '/settings', icon: Settings },
 ]
@@ -52,9 +62,9 @@ export default function Sidebar() {
               className="flex items-center gap-2.5 px-4 py-2 mx-2 my-0.5 rounded text-xs transition-colors"
               style={{
                 fontFamily: 'monospace',
-                color: active ? '#3B82F6' : '#9ca3af',
-                backgroundColor: active ? '#1e2330' : 'transparent',
-                borderLeft: active ? '2px solid #3B82F6' : '2px solid transparent',
+                color: active ? '#5B9BFF' : '#9ca3af',
+                backgroundColor: active ? 'rgba(91,155,255,0.08)' : 'transparent',
+                borderLeft: active ? '2px solid #5B9BFF' : '2px solid transparent',
               }}
             >
               <Icon size={14} />

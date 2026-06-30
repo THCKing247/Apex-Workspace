@@ -1,185 +1,323 @@
-/*
- * Supabase tables needed (run in Supabase SQL editor):
- *
- * -- leads: id, name, company, email, status (open/contacted/proposal/closed), source, notes, created_at
- * -- projects: id, name, client, status (active/paused/completed), github_repo, last_updated, created_at
- *
- * See DEPLOYMENT.md for full CREATE TABLE SQL.
- */
-
-import { createClient } from '@/lib/supabase/server'
 import {
-  Users,
-  FolderKanban,
-  Mail,
-  GitCommit,
-  BarChart2,
-} from 'lucide-react'
+  getOpenLeadsCount,
+  getProjectsByBrand,
+  getPipelineByStage,
+  getRecentActivity,
+  getSocialScore,
+  getCloseRate,
+  getUpcomingEvents,
+  getProjects,
+  getLeadsWithCoords,
+  getBraikTargetsWithCoords,
+} from '@/lib/queries/dashboard'
+import { PipelineChart, ActivityChart, Gauge } from './DashboardCharts'
+import TerritoryMap from '@/components/TerritoryMap'
 
 export const metadata = { title: 'Dashboard — Apex Workspace' }
+export const dynamic = 'force-dynamic'
 
-interface StatCardProps {
-  icon: React.ReactNode
-  value: string | number
-  label: string
-  note?: string
+const BRAND_COLOR: Record<string, string> = {
+  buildvance: '#00E08A',
+  braik: '#FF7A33',
+  apex: '#5B9BFF',
 }
 
-function StatCard({ icon, value, label, note }: StatCardProps) {
+function KpiCard({
+  label,
+  value,
+  color,
+  connect,
+}: {
+  label: string
+  value: string | number
+  color?: string
+  connect?: string
+}) {
   return (
     <div
-      className="rounded-lg border p-5 flex flex-col gap-3"
-      style={{ backgroundColor: '#1a1d2e', borderColor: '#1e2330' }}
+      className="rounded-lg border p-3 flex flex-col gap-1"
+      style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
     >
-      <div style={{ color: '#3B82F6', opacity: 0.7 }}>{icon}</div>
-      <div>
-        <p
-          className="text-2xl font-bold text-white"
-          style={{ fontFamily: 'monospace' }}
-        >
-          {value}
-        </p>
-        <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
-          {label}
-        </p>
-      </div>
-      {note && (
+      <p
+        className="text-xs uppercase tracking-widest"
+        style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+      >
+        {label}
+      </p>
+      <p
+        className="text-xl font-bold"
+        style={{ fontFamily: 'monospace', color: color ?? '#eef2f8' }}
+      >
+        {value}
+      </p>
+      {connect && (
         <span
-          className="self-start text-xs px-2 py-0.5 rounded-full font-medium"
-          style={{ backgroundColor: '#451a03', color: '#f59e0b' }}
+          className="text-xs px-1.5 py-0.5 rounded self-start"
+          style={{ backgroundColor: '#1a2842', color: '#5d6b85', fontFamily: 'monospace', fontSize: 9 }}
         >
-          {note}
+          {connect}
         </span>
       )}
     </div>
   )
 }
 
-const statusColors: Record<string, string> = {
-  open: '#3B82F6',
-  contacted: '#f59e0b',
-  proposal: '#a855f7',
-  closed: '#22c55e',
-  active: '#22c55e',
-  paused: '#f59e0b',
-  completed: '#6b7280',
-}
-
 export default async function DashboardPage() {
-  const supabase = await createClient()
+  const [
+    openLeads,
+    projectsByBrand,
+    pipeline,
+    activity,
+    socialScore,
+    closeRate,
+    events,
+    projects,
+    leads,
+    targets,
+  ] = await Promise.all([
+    getOpenLeadsCount(),
+    getProjectsByBrand(),
+    getPipelineByStage(),
+    getRecentActivity(),
+    getSocialScore(),
+    getCloseRate(),
+    getUpcomingEvents(),
+    getProjects(),
+    getLeadsWithCoords(),
+    getBraikTargetsWithCoords(),
+  ])
 
-  const [{ count: openLeads }, { data: recentLeads }, { count: activeProjects }, { data: recentProjects }] =
-    await Promise.all([
-      supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'open'),
-      supabase.from('leads').select('id, name, company, status, created_at').order('created_at', { ascending: false }).limit(5),
-      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-      supabase.from('projects').select('id, name, status, last_updated').order('last_updated', { ascending: false }).limit(5),
-    ])
+  const mapPoints = [
+    ...leads.map((l) => ({
+      lat: Number(l.lat),
+      lng: Number(l.lng),
+      type: 'buildvance' as const,
+    })),
+    ...targets.map((t) => ({
+      lat: Number(t.lat),
+      lng: Number(t.lng),
+      type: 'braik' as const,
+    })),
+  ]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1
-          className="text-lg font-bold text-white"
-          style={{ fontFamily: 'monospace' }}
-        >
-          Dashboard
-        </h1>
-        <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
-          Business health at a glance
-        </p>
+    <div
+      className="min-h-screen space-y-4 p-4"
+      style={{ background: 'linear-gradient(to bottom, #0a0e1a, #070a12)' }}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p
+            className="uppercase tracking-widest text-xs"
+            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+          >
+            APEX TSG — HQ
+          </p>
+          <h1
+            className="text-xl font-bold text-white"
+            style={{ fontFamily: 'monospace' }}
+          >
+            Command center
+          </h1>
+        </div>
+        <div className="flex items-center gap-4 pt-1">
+          <span className="flex items-center gap-1.5 text-xs" style={{ fontFamily: 'monospace', color: '#00E08A' }}>
+            <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#00E08A' }} />
+            buildvance
+          </span>
+          <span className="flex items-center gap-1.5 text-xs" style={{ fontFamily: 'monospace', color: '#FF7A33' }}>
+            <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#FF7A33' }} />
+            braik
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard icon={<Users size={18} />} value={openLeads ?? 0} label="Open Leads" />
-        <StatCard icon={<FolderKanban size={18} />} value={activeProjects ?? 0} label="Active Projects" />
-        <StatCard icon={<Mail size={18} />} value="—" label="Unread Emails" note="Connect Gmail" />
-        <StatCard icon={<GitCommit size={18} />} value="—" label="GitHub Commits (7d)" note="Connect GitHub" />
-        <StatCard icon={<BarChart2 size={18} />} value="—" label="Social Reach (7d)" note="Connect Meta" />
+      {/* KPI strip */}
+      <div className="grid grid-cols-6 gap-2">
+        <KpiCard label="Open Leads" value={openLeads} />
+        <KpiCard label="Buildvance Proj" value={projectsByBrand.buildvance} color="#00E08A" />
+        <KpiCard label="Braik Proj" value={projectsByBrand.braik} color="#FF7A33" />
+        <KpiCard label="Commits 7d" value="—" connect="add GITHUB_TOKEN" />
+        <KpiCard label="Social Reach 7d" value="—" connect="add META_ACCESS_TOKEN" />
+        <KpiCard label="Unread" value="—" connect="connect Gmail" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Map + Charts row */}
+      <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
+        {/* Territory map */}
         <div
-          className="rounded-lg border p-5"
-          style={{ backgroundColor: '#1a1d2e', borderColor: '#1e2330' }}
+          className="rounded-lg border p-4"
+          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
         >
-          <h2 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: 'monospace' }}>
-            Recent Pipeline Activity
-          </h2>
-          {recentLeads && recentLeads.length > 0 ? (
-            <div className="space-y-2">
-              {recentLeads.map((lead) => (
-                <div
-                  key={lead.id}
-                  className="flex items-center justify-between py-2 border-b"
-                  style={{ borderColor: '#1e2330' }}
+          <div className="flex items-center justify-between mb-3">
+            <p
+              className="text-xs uppercase tracking-widest"
+              style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+            >
+              Territory map
+            </p>
+            <div className="flex items-center gap-3">
+              {[
+                { label: 'foothold', color: '#5B9BFF' },
+                { label: 'buildvance lead', color: '#00E08A' },
+                { label: 'braik target', color: '#FF7A33' },
+              ].map(({ label, color }) => (
+                <span
+                  key={label}
+                  className="flex items-center gap-1 text-xs"
+                  style={{ fontFamily: 'monospace', color: '#5d6b85', fontSize: 9 }}
                 >
-                  <div>
-                    <p className="text-sm text-white">{lead.name}</p>
-                    <p className="text-xs" style={{ color: '#6b7280' }}>{lead.company ?? '—'}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full font-medium capitalize"
-                      style={{
-                        backgroundColor: `${statusColors[lead.status] ?? '#6b7280'}22`,
-                        color: statusColors[lead.status] ?? '#6b7280',
-                      }}
-                    >
-                      {lead.status}
-                    </span>
-                    <span className="text-xs" style={{ color: '#6b7280' }}>
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
+                  <span
+                    className="w-1.5 h-1.5 rounded-full inline-block"
+                    style={{ backgroundColor: color }}
+                  />
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+          <TerritoryMap points={mapPoints} />
+          <p className="text-xs mt-2" style={{ color: '#374151', fontFamily: 'monospace', fontSize: 9 }}>
+            Sample markers — wires to leads + braik_targets tables (lat/lng or state).
+          </p>
+        </div>
+
+        {/* Right column: pipeline chart + gauges */}
+        <div className="flex flex-col gap-4">
+          <div
+            className="rounded-lg border p-4 flex-1"
+            style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
+          >
+            <p
+              className="text-xs uppercase tracking-widest mb-2"
+              style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+            >
+              Pipeline by unit
+            </p>
+            <PipelineChart data={pipeline} />
+          </div>
+
+          <div
+            className="rounded-lg border p-4"
+            style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
+          >
+            <div className="flex items-center justify-around">
+              <Gauge value={socialScore} label="social score" color="#5B9BFF" />
+              <Gauge value={closeRate} label="close rate" color="#5B9BFF" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity chart */}
+      <div
+        className="rounded-lg border p-4"
+        style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
+      >
+        <p
+          className="text-xs uppercase tracking-widest mb-3"
+          style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+        >
+          Activity — 7 days
+        </p>
+        <ActivityChart data={activity} />
+      </div>
+
+      {/* Bottom row */}
+      <div className="grid grid-cols-3 gap-4">
+        {/* Upcoming calendar */}
+        <div
+          className="rounded-lg border p-4"
+          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
+        >
+          <p
+            className="text-xs uppercase tracking-widest mb-3"
+            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+          >
+            Upcoming — calendar
+          </p>
+          {events.length > 0 ? (
+            <div className="space-y-2">
+              {events.map((ev) => (
+                <div key={ev.id} className="flex items-center justify-between">
+                  <p className="text-xs text-white" style={{ fontFamily: 'monospace' }}>
+                    {ev.title}
+                  </p>
+                  <p className="text-xs" style={{ color: '#5d6b85', fontFamily: 'monospace' }}>
+                    {new Date(ev.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs py-8 text-center" style={{ color: '#6b7280' }}>
-              No data yet — add your first entry
-            </p>
+            <div className="space-y-3">
+              <p className="text-xs" style={{ color: '#5d6b85', fontFamily: 'monospace' }}>
+                No events synced yet.
+              </p>
+              <span
+                className="inline-block text-xs px-2 py-1 rounded"
+                style={{ backgroundColor: '#FF7A33', color: '#070a12', fontFamily: 'monospace', fontSize: 9 }}
+              >
+                connect calendar
+              </span>
+            </div>
           )}
         </div>
 
+        {/* Project status */}
         <div
-          className="rounded-lg border p-5"
-          style={{ backgroundColor: '#1a1d2e', borderColor: '#1e2330' }}
+          className="rounded-lg border p-4"
+          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
         >
-          <h2 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: 'monospace' }}>
-            Project Status
-          </h2>
-          {recentProjects && recentProjects.length > 0 ? (
-            <div className="space-y-2">
-              {recentProjects.map((project) => (
-                <div
-                  key={project.id}
-                  className="flex items-center justify-between py-2 border-b"
-                  style={{ borderColor: '#1e2330' }}
-                >
-                  <p className="text-sm text-white">{project.name}</p>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full font-medium capitalize"
-                      style={{
-                        backgroundColor: `${statusColors[project.status] ?? '#6b7280'}22`,
-                        color: statusColors[project.status] ?? '#6b7280',
-                      }}
-                    >
-                      {project.status}
-                    </span>
-                    <span className="text-xs" style={{ color: '#6b7280' }}>
-                      {new Date(project.last_updated).toLocaleDateString()}
-                    </span>
-                  </div>
+          <p
+            className="text-xs uppercase tracking-widest mb-3"
+            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+          >
+            Project status
+          </p>
+          <div className="space-y-2">
+            {projects.map((p) => (
+              <div key={p.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: BRAND_COLOR[p.brand] ?? '#5d6b85' }}
+                  />
+                  <p className="text-xs text-white" style={{ fontFamily: 'monospace' }}>
+                    {p.name}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs py-8 text-center" style={{ color: '#6b7280' }}>
-              No data yet — add your first entry
-            </p>
-          )}
+                <span
+                  className="text-xs px-1.5 py-0.5 rounded"
+                  style={{
+                    backgroundColor: `${BRAND_COLOR[p.brand] ?? '#5d6b85'}18`,
+                    color: BRAND_COLOR[p.brand] ?? '#5d6b85',
+                    fontFamily: 'monospace',
+                    fontSize: 9,
+                  }}
+                >
+                  {p.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AI suggestion */}
+        <div
+          className="rounded-lg border p-4"
+          style={{ backgroundColor: '#0d1420', borderColor: '#1a2842' }}
+        >
+          <p
+            className="text-xs uppercase tracking-widest mb-3"
+            style={{ color: '#5d6b85', fontFamily: 'monospace', letterSpacing: '0.05em', fontSize: 10 }}
+          >
+            AI suggestion
+          </p>
+          <p className="text-xs" style={{ color: '#8b95ab', fontFamily: 'monospace' }}>
+            Connect Meta + Anthropic keys for post-performance suggestions here.
+          </p>
         </div>
       </div>
     </div>
