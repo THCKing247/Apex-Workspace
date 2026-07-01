@@ -35,7 +35,7 @@ export default async function WorkspaceLayout({
             style={{ backgroundColor: 'var(--body-bg)' }}
           >
             <CircuitBackground />
-            <div className="relative z-10 pt-6 pr-6 pb-6 pl-0">
+            <div className="relative z-10 pt-6 pr-6 pb-6 pl-4">
               {children}
             </div>
           </main>

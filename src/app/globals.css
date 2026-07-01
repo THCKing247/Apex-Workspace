@@ -154,3 +154,12 @@ html, body {
 }
 .node-pulse { animation: node-pulse 3s ease-in-out infinite; }
 .node-pulse-slow { animation: node-pulse 5s ease-in-out infinite; }
+
+/* ─── Hide scrollbars globally ───────────────────────────────────────────────*/
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
