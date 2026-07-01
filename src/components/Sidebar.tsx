@@ -73,39 +73,30 @@ export default function Sidebar({ userEmail }: SidebarProps) {
 
   return (
     <aside
-      className="fixed top-0 left-0 h-screen flex flex-col border-r circuit-bg"
+      className="fixed top-0 left-0 h-screen flex flex-col border-r"
       style={{
         width: 224,
         backgroundColor: 'var(--shell-bg)',
         borderColor: 'var(--shell-border)',
       }}
     >
-      {/* Circuit overlay */}
-      <div className="circuit-overlay" aria-hidden="true">
-        <svg
-          width="100%" height="100%"
-          viewBox="0 0 224 900"
-          preserveAspectRatio="xMidYMid slice"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ position: 'absolute', inset: 0 }}
-        >
-          <path className="trace-animated-slow" d="M0,180 L80,180 L80,120 L224,120"
-            fill="none" stroke="#5B9BFF" strokeWidth="1" opacity="0.15" style={{ animationDelay: '0s' }} />
-          <path className="trace-animated" d="M0,380 L60,380 L60,320 L224,320"
-            fill="none" stroke="#5B9BFF" strokeWidth="1" opacity="0.12" style={{ animationDelay: '1.5s' }} />
-          <path className="trace-animated-med" d="M0,560 L100,560 L100,500 L224,500"
-            fill="none" stroke="#FF7A33" strokeWidth="1" opacity="0.13" style={{ animationDelay: '0.8s' }} />
-          <path className="trace-animated-slow" d="M0,720 L70,720 L70,680 L224,680"
-            fill="none" stroke="#00C97A" strokeWidth="1" opacity="0.12" style={{ animationDelay: '2s' }} />
-          <circle className="node-pulse"      cx="80"  cy="180" r="2.5" fill="#5B9BFF" opacity="0.5"  />
-          <circle className="node-pulse-slow" cx="60"  cy="380" r="2.5" fill="#5B9BFF" opacity="0.4"  style={{ animationDelay: '1s'   }} />
-          <circle className="node-pulse"      cx="100" cy="560" r="2.5" fill="#FF7A33" opacity="0.55" style={{ animationDelay: '0.5s' }} />
-          <circle className="node-pulse-slow" cx="70"  cy="720" r="2.5" fill="#00C97A" opacity="0.5"  style={{ animationDelay: '2s'   }} />
-        </svg>
+      {/* Logo at top */}
+      <div
+        className="flex-shrink-0 px-4 pt-4 pb-3 border-b"
+        style={{ borderColor: 'var(--shell-border)' }}
+      >
+        <Image
+          src="/logos/apex-logo.png"
+          alt="Apex Technical Solutions Group"
+          width={130}
+          height={38}
+          style={{ objectFit: 'contain', objectPosition: 'left center' }}
+          priority
+        />
       </div>
 
       {/* Nav sections */}
-      <nav className="flex-1 pt-2 pb-2 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
+      <nav className="flex-1 pt-1 pb-2 overflow-y-auto">
         {sections.map((section) => (
           <div key={section.label} className="mb-1">
             <p
@@ -121,14 +112,15 @@ export default function Sidebar({ userEmail }: SidebarProps) {
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-2.5 px-4 py-2 mx-2 my-0.5 rounded-md text-sm transition-all duration-150 font-display"
+                  className={`sidebar-nav-link flex items-center gap-2.5 px-4 py-2 mx-2 my-0.5 rounded-md text-sm font-display${active ? ' is-active' : ''}`}
                   style={{
+                    '--link-color': color,
                     color: active ? color : 'var(--shell-ink-dim)',
-                    backgroundColor: active ? `color-mix(in srgb, ${color} 12%, transparent)` : 'transparent',
+                    backgroundColor: active ? `color-mix(in srgb, ${color} 12%, transparent)` : '',
                     borderLeft: active ? `2px solid ${color}` : '2px solid transparent',
                     letterSpacing: '0.03em',
                     fontSize: 13,
-                  }}
+                  } as React.CSSProperties}
                 >
                   <Icon
                     size={15}
@@ -142,33 +134,23 @@ export default function Sidebar({ userEmail }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Bottom footer — logo + profile + sign out */}
+      {/* Bottom footer — profile + sign out */}
       <div
-        className="flex-shrink-0 border-t px-4 pt-3 pb-4 space-y-3"
-        style={{ borderColor: 'var(--shell-border)', position: 'relative', zIndex: 1 }}
+        className="flex-shrink-0 border-t px-4 pt-3 pb-4"
+        style={{ borderColor: 'var(--shell-border)' }}
       >
-        <Image
-          src="/logos/apex-logo.png"
-          alt="Apex Technical Solutions Group"
-          width={130}
-          height={38}
-          style={{ objectFit: 'contain', objectPosition: 'left center' }}
-          priority
-        />
-        <div className="flex items-center justify-between">
-          <span
-            className="truncate"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 10,
-              color: 'var(--shell-ink-muted)',
-              maxWidth: 130,
-            }}
-          >
-            {userEmail}
-          </span>
-          <LogoutButton />
-        </div>
+        <span
+          className="block truncate mb-2"
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 10,
+            color: '#d946ef',
+            maxWidth: 192,
+          }}
+        >
+          {userEmail}
+        </span>
+        <LogoutButton />
       </div>
     </aside>
   )
