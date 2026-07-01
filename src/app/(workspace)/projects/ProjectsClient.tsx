@@ -5,6 +5,7 @@ import { Plus, X, GitBranch, AlertCircle, GitPullRequest, Clock } from 'lucide-r
 import { createClient } from '@/lib/supabase/client'
 import type { GitHubRepoData } from '@/app/actions/github'
 import { toast } from 'sonner'
+import { useAssistant } from '@/lib/assistant-context'
 
 type ProjectStatus = 'active' | 'paused' | 'completed'
 
@@ -119,6 +120,7 @@ export default function ProjectsClient({
   githubData: (GitHubRepoData | null)[]
 }) {
   const supabase = createClient()
+  const { logAction } = useAssistant()
   const [projects, setProjects] = useState(initialProjects)
   const [ghData, setGhData] = useState(githubData)
   const [modal, setModal] = useState<{ open: boolean; project?: Project }>({ open: false })
@@ -133,6 +135,7 @@ export default function ProjectsClient({
         .single()
       if (updated) {
         setProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+        logAction({ description: `Updated project '${updated.name}' status to ${updated.status}`, page: '/projects', brand: null })
         toast.success('Project saved')
       }
     } else {
@@ -144,6 +147,7 @@ export default function ProjectsClient({
       if (inserted) {
         setProjects((prev) => [inserted, ...prev])
         setGhData((prev) => [null, ...prev])
+        logAction({ description: `Added new project '${inserted.name}'`, page: '/projects', brand: null })
         toast.success('Project added')
       }
     }

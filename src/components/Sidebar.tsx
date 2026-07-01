@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
+  ListChecks,
   Kanban,
   GitBranch,
   Target,
@@ -15,126 +17,137 @@ import {
   Radar,
   Bot,
   Settings,
-  LucideIcon,
 } from 'lucide-react'
 
-export interface SidebarNavItem {
-  nav_key: string
-  label: string
-  sort_order: number
-  visible: boolean
-  accent_color: 'apex' | 'buildvance' | 'braik'
-}
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  dashboard: LayoutDashboard,
-  pipeline: Kanban,
-  projects: GitBranch,
-  'braik-targets': Target,
-  calendar: Calendar,
-  inbox: Mail,
-  social: BarChart2,
-  notes: FileText,
-  resources: FolderOpen,
-  competitors: Radar,
-  assistant: Bot,
-  settings: Settings,
-}
-
-const ACCENT_COLOR: Record<string, string> = {
-  apex: '#5B9BFF',
-  buildvance: '#00E08A',
-  braik: '#FF7A33',
-}
-
-const ACCENT_DIM: Record<string, string> = {
-  apex: 'rgba(91,155,255,0.1)',
-  buildvance: 'rgba(0,224,138,0.1)',
-  braik: 'rgba(255,122,51,0.1)',
-}
-
-// Fallback used when sidebar_config table doesn't exist yet
-const FALLBACK_NAV: SidebarNavItem[] = [
-  { nav_key: 'dashboard', label: 'Dashboard', sort_order: 1, visible: true, accent_color: 'apex' },
-  { nav_key: 'pipeline', label: 'Pipeline', sort_order: 2, visible: true, accent_color: 'buildvance' },
-  { nav_key: 'projects', label: 'Projects', sort_order: 3, visible: true, accent_color: 'apex' },
-  { nav_key: 'braik-targets', label: 'Braik Targets', sort_order: 4, visible: true, accent_color: 'braik' },
-  { nav_key: 'calendar', label: 'Calendar', sort_order: 5, visible: true, accent_color: 'apex' },
-  { nav_key: 'inbox', label: 'Inbox', sort_order: 6, visible: true, accent_color: 'apex' },
-  { nav_key: 'social', label: 'Social', sort_order: 7, visible: true, accent_color: 'apex' },
-  { nav_key: 'notes', label: 'Notes', sort_order: 8, visible: true, accent_color: 'apex' },
-  { nav_key: 'resources', label: 'Resources', sort_order: 9, visible: true, accent_color: 'apex' },
-  { nav_key: 'competitors', label: 'Competitors', sort_order: 10, visible: true, accent_color: 'apex' },
-  { nav_key: 'assistant', label: 'AI Assistant', sort_order: 11, visible: true, accent_color: 'apex' },
-  { nav_key: 'settings', label: 'Settings', sort_order: 12, visible: true, accent_color: 'apex' },
+const sections = [
+  {
+    label: 'TODAY',
+    items: [
+      { label: 'Dashboard',     href: '/dashboard',     icon: LayoutDashboard, brand: 'apex'        },
+      { label: 'Action Needed', href: '/action-needed', icon: ListChecks,      brand: 'braik'       },
+      { label: 'Pipeline',      href: '/pipeline',      icon: Kanban,          brand: 'buildvance'  },
+      { label: 'Calendar',      href: '/calendar',      icon: Calendar,        brand: 'apex'        },
+      { label: 'Inbox',         href: '/inbox',         icon: Mail,            brand: 'apex'        },
+    ],
+  },
+  {
+    label: 'WORK',
+    items: [
+      { label: 'Projects',      href: '/projects',      icon: GitBranch,       brand: 'buildvance'  },
+      { label: 'Braik Targets', href: '/braik-targets', icon: Target,          brand: 'braik'       },
+      { label: 'Notes',         href: '/notes',         icon: FileText,        brand: 'apex'        },
+    ],
+  },
+  {
+    label: 'GROWTH',
+    items: [
+      { label: 'Social',        href: '/social',        icon: BarChart2,       brand: 'apex'        },
+      { label: 'Competitors',   href: '/competitors',   icon: Radar,           brand: 'apex'        },
+      { label: 'Resources',     href: '/resources',     icon: FolderOpen,      brand: 'apex'        },
+    ],
+  },
+  {
+    label: 'SYSTEM',
+    items: [
+      { label: 'AI Assistant',  href: '/assistant',     icon: Bot,             brand: 'apex'        },
+      { label: 'Settings',      href: '/settings',      icon: Settings,        brand: 'apex'        },
+    ],
+  },
 ]
 
-interface SidebarProps {
-  navItems?: SidebarNavItem[]
+const BRAND_COLOR: Record<string, string> = {
+  buildvance: 'var(--buildvance)',
+  braik:      'var(--braik)',
+  apex:       'var(--apex)',
 }
 
-export default function Sidebar({ navItems }: SidebarProps) {
+export default function Sidebar() {
   const pathname = usePathname()
-  const items = (navItems ?? FALLBACK_NAV).filter((i) => i.visible)
 
   return (
     <aside
-      className="fixed top-0 left-0 h-screen flex flex-col border-r"
+      className="fixed top-0 left-0 h-screen flex flex-col border-r circuit-bg"
       style={{
-        width: 220,
-        backgroundColor: '#16265a',
-        borderColor: 'rgba(91,155,255,0.22)',
+        width: 224,
+        backgroundColor: 'var(--shell-bg)',
+        borderColor: 'var(--shell-border)',
       }}
     >
-      <div
-        className="px-4 py-5 border-b"
-        style={{ borderColor: 'rgba(91,155,255,0.22)' }}
-      >
-        <span
-          className="text-xl uppercase tracking-widest"
-          style={{ fontFamily: 'var(--font-teko)', color: '#f4f8ff', letterSpacing: '0.08em' }}
+      {/* Circuit overlay lives inside the sidebar shell */}
+      <div className="circuit-overlay" aria-hidden="true">
+        <svg
+          width="100%" height="100%"
+          viewBox="0 0 224 900"
+          preserveAspectRatio="xMidYMid slice"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ position: 'absolute', inset: 0 }}
         >
-          APEX TSG
-        </span>
+          <path className="trace-animated-slow" d="M0,180 L80,180 L80,120 L224,120"
+            fill="none" stroke="#5B9BFF" strokeWidth="1" opacity="0.15" style={{ animationDelay: '0s' }} />
+          <path className="trace-animated" d="M0,380 L60,380 L60,320 L224,320"
+            fill="none" stroke="#5B9BFF" strokeWidth="1" opacity="0.12" style={{ animationDelay: '1.5s' }} />
+          <path className="trace-animated-med" d="M0,560 L100,560 L100,500 L224,500"
+            fill="none" stroke="#FF7A33" strokeWidth="1" opacity="0.13" style={{ animationDelay: '0.8s' }} />
+          <path className="trace-animated-slow" d="M0,720 L70,720 L70,680 L224,680"
+            fill="none" stroke="#00C97A" strokeWidth="1" opacity="0.12" style={{ animationDelay: '2s' }} />
+          <circle className="node-pulse"      cx="80"  cy="180" r="2.5" fill="#5B9BFF" opacity="0.5"  />
+          <circle className="node-pulse-slow" cx="60"  cy="380" r="2.5" fill="#5B9BFF" opacity="0.4"  style={{ animationDelay: '1s'   }} />
+          <circle className="node-pulse"      cx="100" cy="560" r="2.5" fill="#FF7A33" opacity="0.55" style={{ animationDelay: '0.5s' }} />
+          <circle className="node-pulse-slow" cx="70"  cy="720" r="2.5" fill="#00C97A" opacity="0.5"  style={{ animationDelay: '2s'   }} />
+        </svg>
       </div>
 
-      <nav className="flex-1 py-3 overflow-y-auto">
-        {items.map(({ nav_key, label, accent_color }) => {
-          const href = `/${nav_key}`
-          const active = pathname === href || pathname.startsWith(href + '/')
-          const color = ACCENT_COLOR[accent_color] ?? '#5B9BFF'
-          const dim = ACCENT_DIM[accent_color] ?? 'rgba(91,155,255,0.1)'
-          const Icon = ICON_MAP[nav_key] ?? LayoutDashboard
+      {/* Wordmark */}
+      <div
+        className="px-4 py-4 border-b flex-shrink-0 flex items-center"
+        style={{ borderColor: 'var(--shell-border)', position: 'relative', zIndex: 1 }}
+      >
+        <Image
+          src="/logos/apex-logo.png"
+          alt="Apex Technical Solutions Group"
+          width={148}
+          height={44}
+          style={{ objectFit: 'contain', objectPosition: 'left center' }}
+          priority
+        />
+      </div>
 
-          return (
-            <Link
-              key={nav_key}
-              href={href}
-              className="flex items-center gap-2.5 px-4 py-2 mx-2 my-0.5 rounded transition-colors"
-              style={{
-                fontFamily: 'var(--font-teko)',
-                fontSize: '1rem',
-                letterSpacing: '0.03em',
-                textTransform: 'uppercase',
-                color: active ? color : '#7d9cd9',
-                backgroundColor: active ? dim : 'transparent',
-                borderLeft: active ? `2px solid ${color}` : '2px solid transparent',
-              }}
-              onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.backgroundColor = 'rgba(16,32,74,0.5)'
-              }}
-              onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.backgroundColor = 'transparent'
-              }}
+      {/* Nav sections */}
+      <nav className="flex-1 py-2 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
+        {sections.map((section) => (
+          <div key={section.label} className="mb-1">
+            <p
+              className="px-4 pt-4 pb-1 text-xs font-display tracking-widest"
+              style={{ color: 'var(--shell-ink-muted)', letterSpacing: '0.12em', fontSize: 10 }}
             >
-              <Icon
-                size={14}
-                style={{ color: active ? color : '#5f73a3', flexShrink: 0 }}
-              />
-              {label}
-            </Link>
-          )
-        })}
+              {section.label}
+            </p>
+            {section.items.map(({ label, href, icon: Icon, brand }) => {
+              const active = pathname === href || pathname.startsWith(href + '/')
+              const color = BRAND_COLOR[brand]
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex items-center gap-2.5 px-4 py-2 mx-2 my-0.5 rounded-md text-sm transition-all duration-150 font-display"
+                  style={{
+                    color: active ? color : 'var(--shell-ink-dim)',
+                    backgroundColor: active ? `color-mix(in srgb, ${color} 12%, transparent)` : 'transparent',
+                    borderLeft: active ? `2px solid ${color}` : '2px solid transparent',
+                    letterSpacing: '0.03em',
+                    fontSize: 13,
+                  }}
+                >
+                  <Icon
+                    size={15}
+                    style={{ color: active ? color : 'var(--shell-ink-muted)', flexShrink: 0 }}
+                  />
+                  {label}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
     </aside>
   )

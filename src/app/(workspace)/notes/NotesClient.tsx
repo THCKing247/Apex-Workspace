@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Plus, X, Search } from 'lucide-react'
+import { useAssistant } from '@/lib/assistant-context'
 
 type BrandType = 'buildvance' | 'braik' | 'apex'
 type FilterType = 'all' | BrandType | 'unlinked'
@@ -59,6 +60,7 @@ export default function NotesClient({ initialNotes, projects, leads }: Props) {
     lead_id: '',
   })
   const supabase = createClient()
+  const { logAction } = useAssistant()
 
   const filtered = notes.filter((n) => {
     const matchFilter =
@@ -84,6 +86,7 @@ export default function NotesClient({ initialNotes, projects, leads }: Props) {
       .single()
     if (error) { toast.error('Failed to create note'); return }
     setNotes((prev) => [data, ...prev])
+    logAction({ description: `Created note '${form.title}'`, page: '/notes', brand: (form.brand as 'buildvance' | 'braik' | 'apex' | null) || null })
     toast.success('Note saved')
     setShowAdd(false)
     setForm({ title: '', content: '', brand: '', project_id: '', lead_id: '' })
@@ -105,8 +108,9 @@ export default function NotesClient({ initialNotes, projects, leads }: Props) {
     setNotes((prev) =>
       prev.map((n) => n.id === editing.id ? { ...n, title: editTitle, content: editContent } : n)
     )
+    logAction({ description: `Saved note '${editTitle}'`, page: '/notes', brand: editing.brand ?? null })
     toast.success('Note saved')
-  }, [editing, editTitle, editContent, supabase])
+  }, [editing, editTitle, editContent, supabase, logAction])
 
   return (
     <div className="flex gap-4 h-full">

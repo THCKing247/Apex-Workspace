@@ -17,17 +17,17 @@ interface TerritoryMapProps {
 }
 
 const FOOTHOLDS = [
-  { name: 'Florida', lat: 27.8, lng: -81.6, type: 'foothold' as const },
-  { name: 'Ohio', lat: 40.4, lng: -82.9, type: 'foothold' as const },
+  { name: 'Florida',     lat: 27.8, lng: -81.6, type: 'foothold' as const },
+  { name: 'Ohio',        lat: 40.4, lng: -82.9, type: 'foothold' as const },
   { name: 'Mississippi', lat: 32.7, lng: -89.7, type: 'foothold' as const },
 ]
 
 const FOOTHOLD_STATES = ['Florida', 'Ohio', 'Mississippi']
 
 const TYPE_COLOR: Record<MapPoint['type'], string> = {
-  foothold: '#5B9BFF',
-  buildvance: '#00E08A',
-  braik: '#FF7A33',
+  foothold:   '#5B9BFF',
+  buildvance: '#00C97A',
+  braik:      '#FF7A33',
 }
 
 export default function TerritoryMap({ points }: TerritoryMapProps) {
@@ -37,14 +37,14 @@ export default function TerritoryMap({ points }: TerritoryMapProps) {
     const svg = svgRef.current
     if (!svg) return
 
-    const width = 975
+    const width  = 975
     const height = 610
 
     const projection = d3.geoAlbersUsa().scale(1300).translate([width / 2, height / 2])
     const path = d3.geoPath().projection(projection)
 
     // IMPORTANT: use the UNPROJECTED states-10m.json here, not states-albers-10m.json.
-    // The "-albers-" file ships pre-projected pixel coordinates already fit to a 975x610
+    // The "-albers-" file ships pre-projected pixel coordinates already fit to a 975×610
     // viewport with NO projection applied on render. Running d3.geoAlbersUsa() over those
     // pre-projected coordinates double-projects them, producing scattered crisscrossing
     // lines instead of state shapes. Using the raw (unprojected, lat/lng-based) topology
@@ -65,9 +65,9 @@ export default function TerritoryMap({ points }: TerritoryMapProps) {
           .attr('d', path as (d: unknown) => string)
           .attr('fill', (d) => {
             const name = (d as GeoJSON.Feature<GeoJSON.Geometry, { name: string }>).properties?.name
-            return FOOTHOLD_STATES.includes(name) ? 'rgba(91,155,255,0.18)' : '#0f1626'
+            return FOOTHOLD_STATES.includes(name) ? 'rgba(91,155,255,0.14)' : '#f0eeea'
           })
-          .attr('stroke', '#1a2842')
+          .attr('stroke', '#d4d1c8')
           .attr('stroke-width', 0.5)
 
         // Foothold dots + labels
@@ -77,19 +77,17 @@ export default function TerritoryMap({ points }: TerritoryMapProps) {
           const [x, y] = coords
           sel
             .append('circle')
-            .attr('cx', x)
-            .attr('cy', y)
+            .attr('cx', x).attr('cy', y)
             .attr('r', 5)
             .attr('fill', '#5B9BFF')
-            .attr('opacity', 0.9)
+            .attr('opacity', 0.85)
 
           sel
             .append('text')
-            .attr('x', x + 7)
-            .attr('y', y + 4)
+            .attr('x', x + 7).attr('y', y + 4)
             .attr('font-size', 9)
-            .attr('font-family', 'monospace')
-            .attr('fill', '#8b95ab')
+            .attr('font-family', 'var(--font-display, sans-serif)')
+            .attr('fill', '#8892aa')
             .text(name)
         })
 
@@ -100,8 +98,7 @@ export default function TerritoryMap({ points }: TerritoryMapProps) {
           const [x, y] = coords
           sel
             .append('circle')
-            .attr('cx', x)
-            .attr('cy', y)
+            .attr('cx', x).attr('cy', y)
             .attr('r', 4)
             .attr('fill', TYPE_COLOR[type])
             .attr('opacity', 0.85)

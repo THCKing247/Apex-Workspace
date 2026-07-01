@@ -6,6 +6,7 @@ import { Plus, X, ChevronRight, Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import ProspectDrawer from '@/components/ProspectDrawer'
 import { toast } from 'sonner'
+import { useAssistant } from '@/lib/assistant-context'
 
 type LeadStatus = 'open' | 'contacted' | 'proposal' | 'closed'
 
@@ -180,6 +181,7 @@ function SlideOver({ lead, onClose, onUpdate }: SlideOverProps) {
 
 export default function PipelineBoard({ initialLeads }: { initialLeads: Lead[] }) {
   const supabase = createClient()
+  const { logAction } = useAssistant()
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [showAdd, setShowAdd] = useState(false)
   const [showProspect, setShowProspect] = useState(false)
@@ -196,6 +198,10 @@ export default function PipelineBoard({ initialLeads }: { initialLeads: Lead[] }
     )
 
     await supabase.from('leads').update({ status: newStatus }).eq('id', draggableId)
+    const movedLead = leads.find((l) => l.id === draggableId)
+    if (movedLead) {
+      logAction({ description: `Moved lead '${movedLead.name}' to ${newStatus}`, page: '/pipeline', brand: null })
+    }
     toast.success('Lead status updated')
   }
 
@@ -207,6 +213,7 @@ export default function PipelineBoard({ initialLeads }: { initialLeads: Lead[] }
       .single()
     if (inserted) {
       setLeads((prev) => [inserted, ...prev])
+      logAction({ description: `Added new lead '${data.name}'${data.company ? ` at ${data.company}` : ''}`, page: '/pipeline', brand: null })
       toast.success('Lead added')
     }
   }

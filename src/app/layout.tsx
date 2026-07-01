@@ -1,16 +1,29 @@
 import type { Metadata } from 'next'
-import { Teko, Inter, JetBrains_Mono } from 'next/font/google'
+import { Teko, Inter, Geist_Mono } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
 
 // FONT USAGE RULE:
 // - Headers, section labels, nav items, ALL numeric/stat values: font-display (Teko) — UPPERCASE for labels
 // - Body copy, form inputs, notes content, email text: font-sans (Inter)
-// - Code-like content (repo names, technical IDs): font-mono (JetBrains Mono)
+// - Code-like content (repo names, technical IDs): font-mono (Geist Mono)
 
-const teko = Teko({ subsets: ['latin'], weight: ['500', '600'], variable: '--font-teko' })
-const inter = Inter({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-inter' })
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains' })
+const teko = Teko({
+  variable: '--font-teko',
+  subsets: ['latin'],
+  weight: ['500', '600'],
+})
+
+const inter = Inter({
+  variable: '--font-inter',
+  subsets: ['latin'],
+  weight: ['400', '500'],
+})
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
   title: 'Apex Workspace',
@@ -19,24 +32,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"
-      className={`${teko.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${teko.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" style={{ backgroundColor: 'var(--body-bg)', color: 'var(--ink-primary)' }}>
         {children}
         <Toaster
           position="bottom-right"
           toastOptions={{
             style: {
-              backgroundColor: '#10204a',
-              border: '1px solid rgba(91,155,255,0.22)',
-              color: '#f4f8ff',
-              fontFamily: 'var(--font-inter)',
+              backgroundColor: '#ffffff',
+              border: '1px solid #e8e6df',
+              color: '#1a1f2e',
+              boxShadow: '0 4px 16px rgba(13,27,61,0.12)',
             },
           }}
         />

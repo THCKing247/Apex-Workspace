@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { X, Plus } from 'lucide-react'
+import { useAssistant } from '@/lib/assistant-context'
 
 type TargetStatus = 'identified' | 'researching' | 'outreach_sent' | 'responded' | 'converted'
 
@@ -53,6 +54,7 @@ export default function BraikTargetsClient({ initialTargets }: Props) {
     notes: '',
   })
   const supabase = createClient()
+  const { logAction } = useAssistant()
 
   const filtered = activeFilter === 'all' ? targets : targets.filter((t) => t.status === activeFilter)
 
@@ -80,6 +82,7 @@ export default function BraikTargetsClient({ initialTargets }: Props) {
       .single()
     if (error) { toast.error('Failed to add target'); return }
     setTargets((prev) => [data, ...prev])
+    logAction({ description: `Added Braik target '${data.school_name}'${data.state ? ` (${data.state})` : ''}`, page: '/braik-targets', brand: 'braik' })
     toast.success('Target added')
     setShowAdd(false)
     setForm({ school_name: '', state: '', lat: '', lng: '', contact_name: '', contact_email: '', status: 'identified', notes: '' })

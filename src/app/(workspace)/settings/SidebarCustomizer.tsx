@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { GripVertical, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -20,6 +21,12 @@ const ACCENT_COLOR: Record<AccentColor, string> = {
   apex: '#5B9BFF',
   buildvance: '#00E08A',
   braik: '#FF7A33',
+}
+
+const BRAND_LOGO: Record<AccentColor, { src: string; alt: string }> = {
+  apex:       { src: '/logos/apex-logo.png',       alt: 'Apex TSG' },
+  buildvance: { src: '/logos/buildvance-logo.png', alt: 'Buildvance' },
+  braik:      { src: '/logos/braik-logo.png',      alt: 'Braik' },
 }
 
 const NON_HIDEABLE = ['dashboard', 'settings']
@@ -122,21 +129,35 @@ export default function SidebarCustomizer({ initialItems }: Props) {
                         {item.label}
                       </span>
 
-                      {/* Color swatches */}
-                      <div className="flex items-center gap-1.5">
-                        {(['apex', 'buildvance', 'braik'] as AccentColor[]).map((ac) => (
-                          <button
-                            key={ac}
-                            onClick={() => setAccent(item.nav_key, ac)}
-                            title={ac}
-                            className="w-3.5 h-3.5 rounded-full transition-transform hover:scale-110"
-                            style={{
-                              backgroundColor: ACCENT_COLOR[ac],
-                              outline: item.accent_color === ac ? `2px solid ${ACCENT_COLOR[ac]}` : 'none',
-                              outlineOffset: 2,
-                            }}
-                          />
-                        ))}
+                      {/* Brand logo swatches */}
+                      <div className="flex items-center gap-2">
+                        {(['apex', 'buildvance', 'braik'] as AccentColor[]).map((ac) => {
+                          const logo = BRAND_LOGO[ac]
+                          const active = item.accent_color === ac
+                          return (
+                            <button
+                              key={ac}
+                              onClick={() => setAccent(item.nav_key, ac)}
+                              title={logo.alt}
+                              className="transition-all duration-150 hover:scale-110"
+                              style={{
+                                padding: 2,
+                                outline: active ? `2px solid ${ACCENT_COLOR[ac]}` : '2px solid transparent',
+                                outlineOffset: 1,
+                                opacity: active ? 1 : 0.4,
+                                borderRadius: 4,
+                              }}
+                            >
+                              <Image
+                                src={logo.src}
+                                alt={logo.alt}
+                                width={32}
+                                height={20}
+                                style={{ objectFit: 'contain', display: 'block' }}
+                              />
+                            </button>
+                          )
+                        })}
                       </div>
 
                       {/* Visibility toggle */}

@@ -1,31 +1,28 @@
 'use client'
 
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, Legend, PieChart, Pie, Cell,
 } from 'recharts'
 
-// All chart colors use explicit hex — recharts/canvas can't read CSS variables.
-const BUILDVANCE = '#00E08A'
-const BRAIK = '#FF7A33'
-const APEX = '#5B9BFF'
+interface PipelineData { stage: string; buildvance: number; braik: number }
+interface ActivityData  { day: string;  buildvance: number; braik: number }
 
-// ── Pipeline bar chart ────────────────────────────────────────────────────────
+// Explicit hex colors — recharts/canvas can't read CSS variables
+const BV = '#00C97A'
+const BR = '#FF7A33'
+const AP = '#5B9BFF'
 
-interface PipelineData {
-  stage: string
-  buildvance: number
-  braik: number
+const tooltipStyle = {
+  contentStyle: {
+    backgroundColor: '#ffffff',
+    border: '1px solid #e8e6df',
+    borderRadius: 8,
+    fontSize: 11,
+    boxShadow: '0 4px 12px rgba(13,27,61,0.1)',
+  },
+  labelStyle: { color: '#1a1f2e' },
+  itemStyle:  { color: '#4b5674' },
 }
 
 export function PipelineChart({ data }: { data: PipelineData[] }) {
@@ -34,77 +31,48 @@ export function PipelineChart({ data }: { data: PipelineData[] }) {
       <BarChart data={data} barCategoryGap="30%">
         <XAxis
           dataKey="stage"
-          tick={{ fontSize: 11, fontFamily: 'var(--font-teko)', fill: '#5f73a3' }}
-          axisLine={false}
-          tickLine={false}
+          tick={{ fontSize: 9, fontFamily: 'var(--font-display)', fill: '#8892aa', letterSpacing: '0.04em' }}
+          axisLine={false} tickLine={false}
         />
         <YAxis hide allowDecimals={false} />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: '#10204a',
-            border: '1px solid rgba(91,155,255,0.3)',
-            borderRadius: 6,
-            fontSize: 12,
-            fontFamily: 'var(--font-teko)',
-          }}
-          labelStyle={{ color: '#f4f8ff' }}
-        />
-        <Bar dataKey="buildvance" name="Buildvance" fill={BUILDVANCE} radius={[2, 2, 0, 0]} />
-        <Bar dataKey="braik" name="Braik" fill={BRAIK} radius={[2, 2, 0, 0]} />
+        <Tooltip {...tooltipStyle} />
+        <Bar dataKey="buildvance" name="Buildvance" fill={BV} radius={[3, 3, 0, 0]} />
+        <Bar dataKey="braik"      name="Braik"      fill={BR} radius={[3, 3, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )
-}
-
-// ── Activity line chart ───────────────────────────────────────────────────────
-
-interface ActivityData {
-  day: string
-  buildvance: number
-  braik: number
 }
 
 export function ActivityChart({ data }: { data: ActivityData[] }) {
   const hasActivity = data.some((d) => d.buildvance > 0 || d.braik > 0)
   const shortDays = data.map((d) => ({
     ...d,
-    day: new Date(d.day + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+    day: new Date(d.day + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase(),
   }))
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ marginTop: 8 }}>
       <ResponsiveContainer width="100%" height={120}>
         <LineChart data={shortDays}>
           <XAxis
             dataKey="day"
-            tick={{ fontSize: 11, fontFamily: 'var(--font-teko)', fill: '#5f73a3' }}
-            axisLine={false}
-            tickLine={false}
+            tick={{ fontSize: 9, fontFamily: 'var(--font-display)', fill: '#8892aa', letterSpacing: '0.04em' }}
+            axisLine={false} tickLine={false}
           />
           <YAxis hide allowDecimals={false} />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: '#10204a',
-              border: '1px solid rgba(91,155,255,0.3)',
-              borderRadius: 6,
-              fontSize: 12,
-              fontFamily: 'var(--font-teko)',
-            }}
-            labelStyle={{ color: '#f4f8ff' }}
-          />
+          <Tooltip {...tooltipStyle} />
           <Legend
-            iconType="circle"
-            iconSize={6}
-            wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-teko)', color: '#5f73a3', textTransform: 'uppercase' }}
+            iconType="circle" iconSize={6}
+            wrapperStyle={{ fontSize: 10, fontFamily: 'var(--font-display)', color: '#8892aa', letterSpacing: '0.04em' }}
           />
-          <Line type="monotone" dataKey="buildvance" name="Buildvance" stroke={BUILDVANCE} strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="braik" name="Braik" stroke={BRAIK} strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="buildvance" name="Buildvance" stroke={BV} strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="braik"      name="Braik"      stroke={BR} strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
       {!hasActivity && (
         <p
-          className="absolute inset-0 flex items-center justify-center uppercase tracking-widest"
-          style={{ fontFamily: 'var(--font-teko)', fontSize: 13, color: '#3d4f87' }}
+          className="absolute inset-0 flex items-center justify-center font-display uppercase"
+          style={{ color: '#8892aa', fontSize: 12, letterSpacing: '0.06em', pointerEvents: 'none' }}
         >
           No activity yet
         </p>
@@ -113,17 +81,10 @@ export function ActivityChart({ data }: { data: ActivityData[] }) {
   )
 }
 
-// ── Gauge / doughnut ──────────────────────────────────────────────────────────
-
-interface GaugeProps {
-  value: number | null
-  label: string
-  color: string
-}
-
-export function Gauge({ value, label, color }: GaugeProps) {
-  const pct = value ?? 0
-  const gaugeColor = color === 'apex' ? APEX : color === 'buildvance' ? BUILDVANCE : color === 'braik' ? BRAIK : color
+export function Gauge({ value, label, color }: { value: number | null; label: string; color: string }) {
+  const pct  = value ?? 0
+  // Resolve CSS variable names to hex for recharts canvas
+  const resolvedColor = color === 'var(--apex)' ? AP : color === 'var(--buildvance)' ? BV : color === 'var(--braik)' ? BR : color
   const data = [{ value: pct }, { value: 100 - pct }]
 
   return (
@@ -131,30 +92,25 @@ export function Gauge({ value, label, color }: GaugeProps) {
       <div className="relative">
         <PieChart width={90} height={90}>
           <Pie
-            data={data}
-            cx={40}
-            cy={40}
-            startAngle={90}
-            endAngle={-270}
-            innerRadius={28}
-            outerRadius={38}
-            dataKey="value"
-            strokeWidth={0}
+            data={data} cx={40} cy={40}
+            startAngle={90} endAngle={-270}
+            innerRadius={28} outerRadius={38}
+            dataKey="value" strokeWidth={0}
           >
-            <Cell fill={value !== null ? gaugeColor : '#3d4f87'} />
-            <Cell fill="rgba(91,155,255,0.1)" />
+            <Cell fill={value !== null ? resolvedColor : '#c4c9d6'} />
+            <Cell fill="#f0eeea" />
           </Pie>
         </PieChart>
         <span
-          className="absolute inset-0 flex items-center justify-center font-semibold"
-          style={{ fontFamily: 'var(--font-teko)', fontSize: 16, color: value !== null ? '#f4f8ff' : '#3d4f87' }}
+          className="absolute inset-0 flex items-center justify-center font-display"
+          style={{ color: value !== null ? '#1a1f2e' : '#8892aa', fontSize: 15, fontWeight: 600 }}
         >
           {value !== null ? `${pct}%` : '—'}
         </span>
       </div>
       <span
-        className="uppercase tracking-widest"
-        style={{ fontFamily: 'var(--font-teko)', fontSize: 10, color: '#5f73a3', letterSpacing: '0.05em' }}
+        className="font-display uppercase tracking-widest"
+        style={{ color: '#8892aa', fontSize: 10, letterSpacing: '0.08em' }}
       >
         {label}
       </span>

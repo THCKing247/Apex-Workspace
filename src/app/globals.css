@@ -1,69 +1,143 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-base-900: #0d1b3d;
-  --color-base-800: #16265a;
-  --color-base-700: #10204a;
-  --color-base-border: rgba(91,155,255,0.22);
-  --color-base-border-strong: rgba(91,155,255,0.35);
-
-  --color-buildvance: #00E08A;
-  --color-buildvance-dim: rgba(0,224,138,0.1);
-  --color-buildvance-border: rgba(0,224,138,0.35);
-  --color-buildvance-bg: linear-gradient(180deg,#0e2b22 0%,#0a221b 100%);
-
-  --color-braik: #FF7A33;
-  --color-braik-dim: rgba(255,122,51,0.1);
-  --color-braik-border: rgba(255,122,51,0.35);
-  --color-braik-bg: linear-gradient(180deg,#2e1c10 0%,#26170c 100%);
-
-  --color-apex: #5B9BFF;
-  --color-apex-dim: rgba(91,155,255,0.1);
-  --color-apex-border: rgba(91,155,255,0.3);
-  --color-apex-bg: linear-gradient(180deg,#16265a 0%,#10204a 100%);
-
-  --color-ink-primary: #f4f8ff;
-  --color-ink-secondary: #7d9cd9;
-  --color-ink-muted: #5f73a3;
-  --color-ink-disabled: #3d4f87;
-
-  --font-display: var(--font-teko);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains);
-}
+/* ─── Apex Workspace — Design System Tokens ─────────────────────────────────
+   Light eggshell body, electric-blue sidebar/shell, brand-coded cards.
+   Body: warm off-white (#F5F4EF) so the app feels "open" not dark.
+   Sidebar + header: deep navy (#0d1b3d) — the "powered-on" shell.
+   Cards: white with colored border/shadow per brand (never dark bg on light body).
+   Circuitry overlay: animated SVG injected via JS into .circuit-bg elements.
+──────────────────────────────────────────────────────────────────────────────*/
 
 :root {
-  --background: #0d1b3d;
-  --foreground: #f4f8ff;
+  /* Body */
+  --body-bg:        #F5F4EF;
+  --body-fg:        #1a1f2e;
+
+  /* Shell (sidebar, top bar) */
+  --shell-bg:       #0d1b3d;
+  --shell-bg-hover: #16265a;
+  --shell-border:   rgba(91,155,255,0.22);
+
+  /* Cards on light body */
+  --card-bg:        #ffffff;
+  --card-border:    #e8e6df;
+  --card-shadow:    0 2px 8px rgba(13,27,61,0.08), 0 1px 2px rgba(13,27,61,0.05);
+
+  /* Brand */
+  --buildvance:     #00C97A;
+  --buildvance-dim: rgba(0,201,122,0.08);
+  --buildvance-border: rgba(0,201,122,0.35);
+
+  --braik:          #FF7A33;
+  --braik-dim:      rgba(255,122,51,0.08);
+  --braik-border:   rgba(255,122,51,0.35);
+
+  --apex:           #5B9BFF;
+  --apex-dim:       rgba(91,155,255,0.08);
+  --apex-border:    rgba(91,155,255,0.3);
+
+  /* Text on light body */
+  --ink-primary:    #1a1f2e;
+  --ink-secondary:  #4b5674;
+  --ink-muted:      #8892aa;
+  --ink-disabled:   #c4c9d6;
+
+  /* Text on dark shell */
+  --shell-ink:      #eef2f8;
+  --shell-ink-dim:  #7d9cd9;
+  --shell-ink-muted:#4a6298;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+@theme inline {
+  --color-body-bg:     var(--body-bg);
+  --color-shell-bg:    var(--shell-bg);
+  --color-card-bg:     var(--card-bg);
+  --color-buildvance:  var(--buildvance);
+  --color-braik:       var(--braik);
+  --color-apex:        var(--apex);
+  --font-display:      var(--font-teko);
+  --font-sans:         var(--font-inter);
+  --font-mono:         var(--font-geist-mono);
 }
 
-.card-depth {
-  box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+/* Base */
+html, body {
+  background: var(--body-bg);
+  color: var(--ink-primary);
+  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ─── Circuit overlay ────────────────────────────────────────────────────────
+   .circuit-bg: add this class to any wrapper that should show the animated
+   circuit trace pattern. The SVG is injected by CircuitBackground component.
+──────────────────────────────────────────────────────────────────────────────*/
 .circuit-bg {
   position: relative;
 }
-
-.circuit-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.14;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 600'%3E%3Cpath d='M0,80 L180,80 L180,30 L420,30 M420,30 L420,140 L620,140 M180,80 L180,200 L60,200 L60,340 M620,140 L620,40 L900,40 M0,420 L260,420 L260,520 L520,520 M520,520 L520,380 L780,380 L780,500 L1000,500 M340,200 L340,320 L520,320 M780,380 L780,260 L600,260' fill='none' stroke='%235B9BFF' stroke-width='1.5'/%3E%3Ccircle cx='180' cy='80' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='420' cy='30' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='620' cy='140' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='60' cy='340' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='260' cy='520' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='780' cy='500' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='340' cy='320' r='3' fill='%235B9BFF'/%3E%3Ccircle cx='600' cy='260' r='3' fill='%235B9BFF'/%3E%3C/svg%3E");
-  background-size: cover;
-  background-repeat: no-repeat;
-  z-index: 0;
-}
-
 .circuit-bg > * {
   position: relative;
   z-index: 1;
 }
+.circuit-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* ─── Card depth on light body ───────────────────────────────────────────────*/
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  box-shadow: var(--card-shadow);
+}
+.card-buildvance {
+  border-color: var(--buildvance-border);
+  box-shadow: var(--card-shadow), 0 0 0 0.5px var(--buildvance-border);
+}
+.card-braik {
+  border-color: var(--braik-border);
+  box-shadow: var(--card-shadow), 0 0 0 0.5px var(--braik-border);
+}
+.card-apex {
+  border-color: var(--apex-border);
+  box-shadow: var(--card-shadow), 0 0 0 0.5px var(--apex-border);
+}
+
+/* ─── Teko display font utility ──────────────────────────────────────────────*/
+.font-display {
+  font-family: var(--font-display, 'Teko', sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Circuit animation keyframes ────────────────────────────────────────────*/
+@keyframes trace-flow {
+  from { stroke-dashoffset: 200; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes node-pulse {
+  0%, 100% { opacity: 0.6; r: 3; }
+  50%       { opacity: 1;   r: 4.5; }
+}
+@keyframes trace-glow {
+  0%, 100% { opacity: 0.12; }
+  50%       { opacity: 0.22; }
+}
+.trace-animated {
+  stroke-dasharray: 200;
+  animation: trace-flow 4s linear infinite, trace-glow 6s ease-in-out infinite;
+}
+.trace-animated-slow {
+  stroke-dasharray: 200;
+  animation: trace-flow 7s linear infinite, trace-glow 8s ease-in-out infinite;
+}
+.trace-animated-med {
+  stroke-dasharray: 200;
+  animation: trace-flow 5.5s linear infinite, trace-glow 7s ease-in-out infinite;
+}
+.node-pulse { animation: node-pulse 3s ease-in-out infinite; }
+.node-pulse-slow { animation: node-pulse 5s ease-in-out infinite; }
