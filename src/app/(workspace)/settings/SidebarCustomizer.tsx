@@ -108,11 +108,14 @@ export default function SidebarCustomizer({ initialItems }: Props) {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
                       style={{
                         background: snapshot.isDragging
-                          ? 'linear-gradient(180deg,#1e3570 0%,#162d60 100%)'
+                          ? 'linear-gradient(135deg,rgba(91,155,255,0.28) 0%,rgba(30,90,220,0.22) 100%)'
                           : item.visible
-                          ? 'linear-gradient(180deg,#16265a 0%,#10204a 100%)'
-                          : 'rgba(16,32,74,0.4)',
-                        border: `1px solid ${snapshot.isDragging ? 'rgba(91,155,255,0.45)' : 'rgba(91,155,255,0.22)'}`,
+                          ? 'linear-gradient(135deg,rgba(91,155,255,0.18) 0%,rgba(20,70,200,0.12) 100%)'
+                          : 'rgba(91,155,255,0.05)',
+                        border: `1px solid ${snapshot.isDragging ? 'rgba(91,155,255,0.7)' : 'rgba(91,155,255,0.38)'}`,
+                        boxShadow: item.visible && !snapshot.isDragging
+                          ? '0 0 0 0.5px rgba(91,155,255,0.12) inset'
+                          : undefined,
                         opacity: item.visible ? 1 : 0.5,
                       }}
                     >

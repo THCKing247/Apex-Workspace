@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import {
   getOpenLeadsCount,
   getProjectsByBrand,
@@ -128,17 +129,21 @@ export default async function DashboardPage() {
             COMMAND CENTER
           </h1>
         </div>
-        <div className="flex items-center gap-5 pt-2">
-          <span className="flex items-center gap-1.5 font-display uppercase"
-            style={{ color: 'var(--buildvance)', fontSize: 12, letterSpacing: '0.04em' }}>
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--buildvance)', display: 'inline-block' }} />
-            Buildvance
-          </span>
-          <span className="flex items-center gap-1.5 font-display uppercase"
-            style={{ color: 'var(--braik)', fontSize: 12, letterSpacing: '0.04em' }}>
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--braik)', display: 'inline-block' }} />
-            Braik
-          </span>
+        <div className="flex items-center gap-4 pt-1">
+          <Image
+            src="/logos/buildvance-logo.png"
+            alt="Buildvance"
+            width={96}
+            height={30}
+            style={{ objectFit: 'contain', objectPosition: 'right center' }}
+          />
+          <Image
+            src="/logos/braik-logo.png"
+            alt="Braik"
+            width={64}
+            height={30}
+            style={{ objectFit: 'contain', objectPosition: 'right center' }}
+          />
         </div>
       </div>
 

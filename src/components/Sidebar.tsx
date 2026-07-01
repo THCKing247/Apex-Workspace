@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import LogoutButton from '@/components/LogoutButton'
 import {
   LayoutDashboard,
   ListChecks,
@@ -17,6 +18,7 @@ import {
   Radar,
   Bot,
   Settings,
+  FileBarChart2,
 } from 'lucide-react'
 
 const sections = [
@@ -25,6 +27,7 @@ const sections = [
     items: [
       { label: 'Dashboard',     href: '/dashboard',     icon: LayoutDashboard, brand: 'apex'        },
       { label: 'Action Needed', href: '/action-needed', icon: ListChecks,      brand: 'braik'       },
+      { label: 'Reports',       href: '/reports',       icon: FileBarChart2,   brand: 'apex'        },
       { label: 'Pipeline',      href: '/pipeline',      icon: Kanban,          brand: 'buildvance'  },
       { label: 'Calendar',      href: '/calendar',      icon: Calendar,        brand: 'apex'        },
       { label: 'Inbox',         href: '/inbox',         icon: Mail,            brand: 'apex'        },
@@ -61,7 +64,11 @@ const BRAND_COLOR: Record<string, string> = {
   apex:       'var(--apex)',
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  userEmail: string
+}
+
+export default function Sidebar({ userEmail }: SidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -73,7 +80,7 @@ export default function Sidebar() {
         borderColor: 'var(--shell-border)',
       }}
     >
-      {/* Circuit overlay lives inside the sidebar shell */}
+      {/* Circuit overlay */}
       <div className="circuit-overlay" aria-hidden="true">
         <svg
           width="100%" height="100%"
@@ -97,23 +104,8 @@ export default function Sidebar() {
         </svg>
       </div>
 
-      {/* Wordmark */}
-      <div
-        className="px-4 py-4 border-b flex-shrink-0 flex items-center"
-        style={{ borderColor: 'var(--shell-border)', position: 'relative', zIndex: 1 }}
-      >
-        <Image
-          src="/logos/apex-logo.png"
-          alt="Apex Technical Solutions Group"
-          width={148}
-          height={44}
-          style={{ objectFit: 'contain', objectPosition: 'left center' }}
-          priority
-        />
-      </div>
-
       {/* Nav sections */}
-      <nav className="flex-1 py-2 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
+      <nav className="flex-1 pt-2 pb-2 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
         {sections.map((section) => (
           <div key={section.label} className="mb-1">
             <p
@@ -149,6 +141,35 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
+
+      {/* Bottom footer — logo + profile + sign out */}
+      <div
+        className="flex-shrink-0 border-t px-4 pt-3 pb-4 space-y-3"
+        style={{ borderColor: 'var(--shell-border)', position: 'relative', zIndex: 1 }}
+      >
+        <Image
+          src="/logos/apex-logo.png"
+          alt="Apex Technical Solutions Group"
+          width={130}
+          height={38}
+          style={{ objectFit: 'contain', objectPosition: 'left center' }}
+          priority
+        />
+        <div className="flex items-center justify-between">
+          <span
+            className="truncate"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              color: 'var(--shell-ink-muted)',
+              maxWidth: 130,
+            }}
+          >
+            {userEmail}
+          </span>
+          <LogoutButton />
+        </div>
+      </div>
     </aside>
   )
 }

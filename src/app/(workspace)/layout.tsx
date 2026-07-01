@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import CircuitBackground from '@/components/CircuitBackground'
 import LogoutButton from '@/components/LogoutButton'
+import WorkspaceShell from '@/components/WorkspaceShell'
 import { AssistantProvider } from '@/lib/assistant-context'
 import PageContextTracker from '@/components/PageContextTracker'
 import AssistantTrigger from '@/components/AssistantTrigger'
@@ -26,9 +27,9 @@ export default async function WorkspaceLayout({
     <AssistantProvider>
       <PageContextTracker />
       <div className="flex min-h-screen" style={{ backgroundColor: 'var(--body-bg)' }}>
-        <Sidebar />
+        <Sidebar userEmail={user.email ?? ''} />
 
-        <div className="flex-1" style={{ marginLeft: 224 }}>
+        <WorkspaceShell>
           {/* Top bar — dark shell strip */}
           <header
             className="flex items-center justify-between px-6 py-3 border-b sticky top-0 z-10"
@@ -63,7 +64,7 @@ export default async function WorkspaceLayout({
               {children}
             </div>
           </main>
-        </div>
+        </WorkspaceShell>
       </div>
 
       {/* Floating assistant trigger + lazy-loaded panel — always mounted, never reflowing page */}
