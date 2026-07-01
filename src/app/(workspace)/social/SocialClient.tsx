@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import type { MetaPageData } from '@/app/actions/meta'
+import { useBrandScope } from '@/lib/brand-scope-context'
 
 interface PageConfig {
   id: string
@@ -43,8 +44,15 @@ function SetupModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function SocialClient({ pages, pageData, connected }: Props) {
-  const [activeTab, setActiveTab] = useState(0)
+  const { scope } = useBrandScope()
+  const initialTab = scope === 'buildvance' ? 1 : scope === 'braik' ? 2 : 0
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [showSetup, setShowSetup] = useState(false)
+
+  // Sync tab when global scope changes
+  useEffect(() => {
+    setActiveTab(scope === 'buildvance' ? 1 : scope === 'braik' ? 2 : 0)
+  }, [scope])
 
   const current = pageData[activeTab]
 

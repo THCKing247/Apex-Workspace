@@ -7,21 +7,23 @@ import {
   CheckCircle, XCircle, Clock, Loader2,
 } from 'lucide-react'
 import type { ReportType, ReportRecord, ReportData } from '@/lib/reports/types'
+import { useBrandScope, type BrandScope } from '@/lib/brand-scope-context'
 
 // ── Report catalogue ──────────────────────────────────────────────────────────
 const REPORT_DEFS: Array<{
-  type:        ReportType
-  label:       string
-  description: string
-  brand:       'buildvance' | 'braik' | 'apex'
-  icon:        React.ElementType
+  type:           ReportType
+  label:          string
+  description:    string
+  brand:          'buildvance' | 'braik' | 'apex'
+  icon:           React.ElementType
+  relevantScopes: BrandScope[]
 }> = [
-  { type: 'pipeline_health',    label: 'Pipeline Health',       description: 'Lead conversion, velocity, close rates by brand and source', brand: 'buildvance', icon: BarChart2   },
-  { type: 'braik_outreach',     label: 'Braik Outreach',        description: 'School target funnel, response rates, state coverage',       brand: 'braik',       icon: Target     },
-  { type: 'territory_coverage', label: 'Territory Coverage',    description: 'Geographic lead density, foothold vs gap analysis',           brand: 'apex',        icon: Map        },
-  { type: 'social_performance', label: 'Social Performance',    description: 'Scorecard trends across Apex, Buildvance, and Braik',        brand: 'apex',        icon: Share2     },
-  { type: 'api_intelligence',   label: 'API Intelligence',      description: 'Integration health, competitor snapshots, Hunter usage',      brand: 'apex',        icon: Cpu        },
-  { type: 'agent_performance',  label: 'Agent Performance',     description: 'Automated workflow runs, success rates, token costs',         brand: 'apex',        icon: TrendingUp },
+  { type: 'pipeline_health',    label: 'Pipeline Health',    description: 'Lead conversion, velocity, close rates by brand and source', brand: 'buildvance', icon: BarChart2,   relevantScopes: ['all', 'buildvance']             },
+  { type: 'braik_outreach',     label: 'Braik Outreach',     description: 'School target funnel, response rates, state coverage',       brand: 'braik',      icon: Target,      relevantScopes: ['all', 'braik']                  },
+  { type: 'territory_coverage', label: 'Territory Coverage', description: 'Geographic lead density, foothold vs gap analysis',           brand: 'apex',       icon: Map,         relevantScopes: ['all', 'buildvance', 'braik']     },
+  { type: 'social_performance', label: 'Social Performance', description: 'Scorecard trends across Apex, Buildvance, and Braik',        brand: 'apex',       icon: Share2,      relevantScopes: ['all', 'braik']                  },
+  { type: 'api_intelligence',   label: 'API Intelligence',   description: 'Integration health, competitor snapshots, Hunter usage',      brand: 'apex',       icon: Cpu,         relevantScopes: ['all', 'buildvance']             },
+  { type: 'agent_performance',  label: 'Agent Performance',  description: 'Automated workflow runs, success rates, token costs',         brand: 'apex',       icon: TrendingUp,  relevantScopes: ['all', 'buildvance', 'braik']     },
 ]
 
 const BRAND_COLOR: Record<string, string> = {
@@ -407,6 +409,9 @@ function ReportCard({
 // ── Main client ───────────────────────────────────────────────────────────────
 export default function ReportsClient({ existing }: { existing: ReportRecord[] }) {
   const [generating, setGenerating] = useState(false)
+  const { scope } = useBrandScope()
+
+  const visibleDefs = REPORT_DEFS.filter(def => def.relevantScopes.includes(scope))
 
   async function generateAll() {
     setGenerating(true)
@@ -451,7 +456,7 @@ export default function ReportsClient({ existing }: { existing: ReportRecord[] }
 
       {/* Report cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {REPORT_DEFS.map(def => {
+        {visibleDefs.map(def => {
           const latestForType = existing
             .filter(r => r.type === def.type)
             .sort((a, b) => new Date(b.generated_at).getTime() - new Date(a.generated_at).getTime())[0] ?? null

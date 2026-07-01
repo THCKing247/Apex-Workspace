@@ -8,6 +8,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Plus, X, ExternalLink, Pencil } from 'lucide-react'
+import { useScopedFilter } from '@/lib/use-scoped-filter'
+import ScopeFilterBanner from '@/components/ScopeFilterBanner'
 
 type BrandType = 'buildvance' | 'braik' | 'apex'
 
@@ -49,8 +51,9 @@ export default function CompetitorsClient({ initialCompetitors }: Props) {
   const [form, setForm] = useState(emptyForm)
   const supabase = createClient()
 
-  const buildvance = competitors.filter((c) => c.brand === 'buildvance')
-  const braik = competitors.filter((c) => c.brand === 'braik')
+  const { filtered: scopedCompetitors, hiddenCount } = useScopedFilter(competitors)
+  const buildvance = scopedCompetitors.filter((c) => c.brand === 'buildvance')
+  const braik = scopedCompetitors.filter((c) => c.brand === 'braik')
 
   function openEdit(c: Competitor) {
     setEditing(c)
@@ -221,6 +224,7 @@ export default function CompetitorsClient({ initialCompetitors }: Props) {
 
   return (
     <div className="space-y-6">
+      <ScopeFilterBanner hiddenCount={hiddenCount} />
       <div className="flex justify-end">
         <button
           onClick={() => { setEditing(null); setForm(emptyForm); setShowAdd(true) }}

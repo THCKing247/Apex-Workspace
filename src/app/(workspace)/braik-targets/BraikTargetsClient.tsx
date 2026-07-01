@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { X, Plus } from 'lucide-react'
 import { useAssistant } from '@/lib/assistant-context'
+import { useScopedFilter } from '@/lib/use-scoped-filter'
+import ScopeFilterBanner from '@/components/ScopeFilterBanner'
 
 type TargetStatus = 'identified' | 'researching' | 'outreach_sent' | 'responded' | 'converted'
 
@@ -56,7 +58,12 @@ export default function BraikTargetsClient({ initialTargets }: Props) {
   const supabase = createClient()
   const { logAction } = useAssistant()
 
-  const filtered = activeFilter === 'all' ? targets : targets.filter((t) => t.status === activeFilter)
+  const { filtered: _scopedTargets, hiddenCount } = useScopedFilter(
+    targets as (BraikTarget & { brand?: string })[],
+    { braikOnly: true }
+  )
+  const scopedTargets = _scopedTargets as BraikTarget[]
+  const filtered = activeFilter === 'all' ? scopedTargets : scopedTargets.filter((t) => t.status === activeFilter)
 
   const stats = {
     total: targets.length,
@@ -106,6 +113,7 @@ export default function BraikTargetsClient({ initialTargets }: Props) {
 
   return (
     <div className="space-y-4">
+      <ScopeFilterBanner hiddenCount={hiddenCount} />
       {/* Stat row */}
       <div className="grid grid-cols-3 gap-3">
         {[

@@ -7,8 +7,11 @@ import { createClient } from '@/lib/supabase/client'
 import ProspectDrawer from '@/components/ProspectDrawer'
 import { toast } from 'sonner'
 import { useAssistant } from '@/lib/assistant-context'
+import { useScopedFilter } from '@/lib/use-scoped-filter'
+import ScopeFilterBanner from '@/components/ScopeFilterBanner'
 
 type LeadStatus = 'open' | 'contacted' | 'proposal' | 'closed'
+type BrandType = 'buildvance' | 'braik' | 'apex'
 
 interface Lead {
   id: string
@@ -18,6 +21,7 @@ interface Lead {
   status: LeadStatus
   source: string | null
   notes: string | null
+  brand: BrandType
   created_at: string
 }
 
@@ -29,6 +33,12 @@ const COLUMNS: { id: LeadStatus; label: string; color: string }[] = [
 ]
 
 const SOURCE_OPTIONS = ['Referral', 'Chamber', 'Cold Outreach', 'Braik Network', 'Social Media', 'Other']
+const BRAND_OPTIONS: BrandType[] = ['buildvance', 'braik', 'apex']
+const BRAND_COLOR: Record<BrandType, string> = {
+  buildvance: 'var(--buildvance)',
+  braik:      'var(--braik)',
+  apex:       'var(--apex)',
+}
 
 function daysAgo(date: string) {
   const diff = Math.floor((Date.now() - new Date(date).getTime()) / 86400000)
@@ -43,12 +53,13 @@ interface AddLeadModalProps {
 
 function AddLeadModal({ onClose, onAdd, prefill }: AddLeadModalProps) {
   const [form, setForm] = useState({
-    name: prefill?.name ?? '',
+    name:    prefill?.name    ?? '',
     company: prefill?.company ?? '',
-    email: prefill?.email ?? '',
-    source: prefill?.source ?? 'Referral',
-    notes: prefill?.notes ?? '',
-    status: (prefill?.status ?? 'open') as LeadStatus,
+    email:   prefill?.email   ?? '',
+    source:  prefill?.source  ?? 'Referral',
+    notes:   prefill?.notes   ?? '',
+    status:  (prefill?.status ?? 'open') as LeadStatus,
+    brand:   (prefill?.brand  ?? 'buildvance') as BrandType,
   })
   const [saving, setSaving] = useState(false)
 
@@ -98,6 +109,22 @@ function AddLeadModal({ onClose, onAdd, prefill }: AddLeadModalProps) {
               style={{ backgroundColor: '#0f1117', borderColor: '#1e2330' }}
             >
               {SOURCE_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs mb-1" style={{ color: '#6b7280' }}>Brand</label>
+            <select
+              value={form.brand}
+              onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value as BrandType }))}
+              className="w-full px-3 py-2 rounded border text-sm text-white outline-none"
+              style={{ backgroundColor: '#0f1117', borderColor: '#1e2330' }}
+            >
+              {BRAND_OPTIONS.map((b) => (
+                <option key={b} value={b} style={{ textTransform: 'capitalize' }}>
+                  {b.charAt(0).toUpperCase() + b.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -188,6 +215,8 @@ export default function PipelineBoard({ initialLeads }: { initialLeads: Lead[] }
   const [addPrefill, setAddPrefill] = useState<Partial<Lead> | undefined>()
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
 
+  const { filtered: scopedLeads, hiddenCount } = useScopedFilter(leads)
+
   async function handleDragEnd(result: DropResult) {
     if (!result.destination) return
     const { draggableId, destination } = result
@@ -251,10 +280,12 @@ export default function PipelineBoard({ initialLeads }: { initialLeads: Lead[] }
         </div>
       </div>
 
+      <ScopeFilterBanner hiddenCount={hiddenCount} />
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {COLUMNS.map((col) => {
-            const colLeads = leads.filter((l) => l.status === col.id)
+            const colLeads = scopedLeads.filter((l) => l.status === col.id)
             return (
               <div key={col.id}>
                 <div className="flex items-center gap-2 mb-3">
@@ -297,6 +328,7 @@ export default function PipelineBoard({ initialLeads }: { initialLeads: Lead[] }
                               style={{
                                 backgroundColor: snap.isDragging ? '#1e2330' : '#1a1d2e',
                                 borderColor: '#1e2330',
+                                borderLeft: `3px solid ${BRAND_COLOR[lead.brand] ?? '#1e2330'}`,
                                 boxShadow: snap.isDragging ? '0 4px 16px rgba(0,0,0,0.4)' : undefined,
                               }}
                             >

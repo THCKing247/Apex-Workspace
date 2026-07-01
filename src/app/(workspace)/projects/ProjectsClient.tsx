@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import type { GitHubRepoData } from '@/app/actions/github'
 import { toast } from 'sonner'
 import { useAssistant } from '@/lib/assistant-context'
+import { useScopedFilter } from '@/lib/use-scoped-filter'
+import ScopeFilterBanner from '@/components/ScopeFilterBanner'
 
 type ProjectStatus = 'active' | 'paused' | 'completed'
 
@@ -14,6 +16,7 @@ interface Project {
   name: string
   client: string | null
   status: ProjectStatus
+  brand: string
   github_repo: string | null
   last_updated: string
   created_at: string
@@ -125,6 +128,8 @@ export default function ProjectsClient({
   const [ghData, setGhData] = useState(githubData)
   const [modal, setModal] = useState<{ open: boolean; project?: Project }>({ open: false })
 
+  const { filtered: scopedProjects, hiddenCount } = useScopedFilter(projects)
+
   async function handleSave(data: Partial<Project>) {
     if (modal.project) {
       const { data: updated } = await supabase
@@ -166,8 +171,11 @@ export default function ProjectsClient({
         </button>
       </div>
 
+      <ScopeFilterBanner hiddenCount={hiddenCount} />
+
       <div className="space-y-4">
-        {projects.map((project, i) => {
+        {scopedProjects.map((project) => {
+          const i = projects.findIndex(p => p.id === project.id)
           const gh = ghData[i]
           return (
             <div
@@ -249,7 +257,7 @@ export default function ProjectsClient({
           )
         })}
 
-        {projects.length === 0 && (
+        {scopedProjects.length === 0 && (
           <p className="text-center py-16 text-sm" style={{ color: '#6b7280' }}>
             No projects yet — add your first project
           </p>

@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Plus, X, Search } from 'lucide-react'
 import { useAssistant } from '@/lib/assistant-context'
+import { useScopedFilter } from '@/lib/use-scoped-filter'
+import ScopeFilterBanner from '@/components/ScopeFilterBanner'
 
 type BrandType = 'buildvance' | 'braik' | 'apex'
 type FilterType = 'all' | BrandType | 'unlinked'
@@ -62,7 +64,9 @@ export default function NotesClient({ initialNotes, projects, leads }: Props) {
   const supabase = createClient()
   const { logAction } = useAssistant()
 
-  const filtered = notes.filter((n) => {
+  const { filtered: scopedNotes, hiddenCount } = useScopedFilter(notes)
+
+  const filtered = scopedNotes.filter((n) => {
     const matchFilter =
       filter === 'all' ? true :
       filter === 'unlinked' ? !n.linked_project_id && !n.linked_lead_id :
@@ -113,6 +117,8 @@ export default function NotesClient({ initialNotes, projects, leads }: Props) {
   }, [editing, editTitle, editContent, supabase, logAction])
 
   return (
+    <div className="space-y-0">
+    <ScopeFilterBanner hiddenCount={hiddenCount} />
     <div className="flex gap-4 h-full">
       {/* List */}
       <div className="w-72 flex-shrink-0 space-y-3">
@@ -321,6 +327,7 @@ export default function NotesClient({ initialNotes, projects, leads }: Props) {
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }

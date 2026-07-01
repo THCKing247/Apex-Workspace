@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Plus, X, ExternalLink, Key, Image, FileText, FileSignature, Folder, AlertTriangle } from 'lucide-react'
+import { useScopedFilter } from '@/lib/use-scoped-filter'
+import ScopeFilterBanner from '@/components/ScopeFilterBanner'
 
 type Category = 'credentials' | 'brand_assets' | 'templates' | 'contracts' | 'other'
 type BrandType = 'buildvance' | 'braik' | 'apex'
@@ -52,9 +54,10 @@ export default function ResourcesClient({ initialResources }: Props) {
   })
   const supabase = createClient()
 
-  const filtered = filter === 'all' ? resources : resources.filter((r) => r.category === filter)
+  const { filtered: scopedResources, hiddenCount } = useScopedFilter(resources)
+  const filtered = filter === 'all' ? scopedResources : scopedResources.filter((r) => r.category === filter)
   const grouped = ALL_CATEGORIES.reduce<Record<Category, Resource[]>>((acc, cat) => {
-    acc[cat] = (filter === 'all' ? resources : filtered).filter((r) => r.category === cat)
+    acc[cat] = (filter === 'all' ? scopedResources : filtered).filter((r) => r.category === cat)
     return acc
   }, { credentials: [], brand_assets: [], templates: [], contracts: [], other: [] })
 
@@ -89,6 +92,7 @@ export default function ResourcesClient({ initialResources }: Props) {
 
   return (
     <div className="space-y-4">
+      <ScopeFilterBanner hiddenCount={hiddenCount} />
       {/* Filter tabs + add */}
       <div className="flex items-center justify-between">
         <div className="flex gap-1 flex-wrap">

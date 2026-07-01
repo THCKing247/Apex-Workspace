@@ -133,3 +133,32 @@ export async function getBraikTargetsWithCoords() {
     .not('lng', 'is', null)
   return data ?? []
 }
+
+// ─── Added for brand-scope dashboard filtering ─────────────────────────────
+
+export async function getAllLeadsBasic() {
+  const supabase = await createClient()
+  const { data } = await supabase.from('leads').select('id, brand, status, created_at')
+  return data ?? []
+}
+
+export async function getSocialScoresByBrand() {
+  const supabase = await createClient()
+  const brands = ['apex', 'buildvance', 'braik'] as const
+  const results: Record<string, number | null> = {}
+
+  await Promise.all(brands.map(async (brand) => {
+    const { data } = await supabase
+      .from('social_scorecard')
+      .select('consistency_score, engagement_quality_score, brand_voice_score')
+      .eq('brand', brand)
+      .order('week_of', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (!data) { results[brand] = null; return }
+    const avg = ((data.consistency_score ?? 0) + (data.engagement_quality_score ?? 0) + (data.brand_voice_score ?? 0)) / 3
+    results[brand] = Math.round((avg / 10) * 100)
+  }))
+
+  return results
+}

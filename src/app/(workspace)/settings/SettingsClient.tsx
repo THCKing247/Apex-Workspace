@@ -9,6 +9,7 @@ import {
   Sun, Moon, Plus, Trash2, Download,
 } from 'lucide-react'
 import SidebarCustomizer from './SidebarCustomizer'
+import { useBrandScope, type BrandScope } from '@/lib/brand-scope-context'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AccentColor = 'apex' | 'buildvance' | 'braik'
@@ -311,6 +312,52 @@ insert into sidebar_config (nav_key, label, sort_order, accent_color) values
   ('assistant',     'AI Assistant', 13, 'apex'),
   ('settings',      'Settings',     14, 'apex');`
 
+// ─────────────────────────────────────────────────────────────────────────────
+// BRAND SCOPE SETTINGS CARD
+// ─────────────────────────────────────────────────────────────────────────────
+function BrandScopeSettingsCard() {
+  const { scope, setScope } = useBrandScope()
+
+  const OPTIONS: Array<{ id: BrandScope; label: string; desc: string; color: string }> = [
+    { id: 'all',        label: 'All (Apex TSG)', desc: 'See everything combined across both businesses', color: 'var(--apex)'       },
+    { id: 'buildvance', label: 'Buildvance',     desc: 'Focus every tool on Buildvance data only',       color: 'var(--buildvance)' },
+    { id: 'braik',      label: 'Braik',          desc: 'Focus every tool on Braik data only',             color: 'var(--braik)'      },
+  ]
+
+  return (
+    <div className="card" style={{ padding: 20 }}>
+      <p className="font-display uppercase" style={{ color: 'var(--ink-primary)', fontSize: 14, letterSpacing: '0.06em', marginBottom: 4 }}>
+        Brand Scope — App-wide Lens
+      </p>
+      <p style={{ fontSize: 12, color: 'var(--ink-muted)', marginBottom: 16 }}>
+        Controls what the Dashboard and other scoped tools display. The same options are available as the logo switcher in the top bar — clicking the Apex logo anywhere jumps back to "All."
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+        {OPTIONS.map(({ id, label, desc, color }) => {
+          const active = scope === id
+          return (
+            <button
+              key={id}
+              onClick={() => setScope(id)}
+              style={{
+                padding: '14px', borderRadius: 10, textAlign: 'left', cursor: 'pointer',
+                border: `1.5px solid ${active ? color : 'var(--card-border)'}`,
+                background: active ? `color-mix(in srgb, ${color} 8%, var(--body-bg))` : 'var(--body-bg)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <p className="font-display uppercase" style={{ color: active ? color : 'var(--ink-primary)', fontSize: 13, letterSpacing: '0.04em', marginBottom: 4 }}>
+                {label}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--ink-muted)', lineHeight: 1.4 }}>{desc}</p>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function WorkspaceTab({ sidebarItems }: { sidebarItems: SidebarItem[] }) {
   const [thresholds, setThresholds] = useState({
     leads_open_days:      2,
@@ -336,6 +383,8 @@ function WorkspaceTab({ sidebarItems }: { sidebarItems: SidebarItem[] }) {
           Control how the workspace behaves for both users.
         </p>
       </div>
+
+      <BrandScopeSettingsCard />
 
       {/* Sidebar customizer */}
       <div className="card" style={{ padding: 20 }}>
