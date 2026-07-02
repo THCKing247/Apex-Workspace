@@ -5,23 +5,14 @@ import {
   Plug, LayoutDashboard, Bell, Building2, Users,
   Palette, Database, CheckCircle2, AlertCircle,
   GitBranch, Globe, Mail, Search, Bot, Calendar,
-  ChevronRight, Save,
-  Sun, Moon, Plus, Trash2, Download,
+  ChevronRight, Save, Plus, Download, X, Trash2,
+  Sun, Moon,
 } from 'lucide-react'
-import SidebarCustomizer from './SidebarCustomizer'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import { useBrandScope, type BrandScope } from '@/lib/brand-scope-context'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type AccentColor = 'apex' | 'buildvance' | 'braik'
-
-interface SidebarItem {
-  nav_key:      string
-  label:        string
-  sort_order:   number
-  visible:      boolean
-  accent_color: AccentColor
-}
-
 interface Integration {
   id:         string
   name:       string
@@ -34,10 +25,19 @@ interface Integration {
   category:   'data' | 'comms' | 'ai' | 'social' | 'prospecting'
 }
 
+export interface CustomIntegration {
+  id:          string
+  name:        string
+  env_var:     string
+  category:    string
+  mapped_tool: string
+  notes:       string | null
+}
+
 interface Props {
-  user:         { email: string | undefined }
-  envFlags:     Record<string, boolean>
-  sidebarItems: SidebarItem[]
+  user:               { email: string | undefined }
+  envFlags:           Record<string, boolean>
+  customIntegrations: CustomIntegration[]
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -128,6 +128,95 @@ const TABS = [
   { id: 'data',          label: 'Data & Export',    icon: Database        },
 ]
 
+// ─── Custom integration helpers ───────────────────────────────────────────────
+const TOOL_OPTIONS = [
+  'Dashboard', 'Pipeline', 'Projects', 'Braik Targets', 'Calendar', 'Inbox',
+  'Social', 'Notes', 'Resources', 'Competitors', 'AI Assistant', 'Reports',
+  'Action Needed', 'Other / Custom',
+]
+
+function AddIntegrationModal({
+  onClose, onAdd,
+}: {
+  onClose: () => void
+  onAdd: (entry: Omit<CustomIntegration, 'id'>) => Promise<void>
+}) {
+  const [name, setName]         = useState('')
+  const [envVar, setEnvVar]     = useState('')
+  const [category, setCategory] = useState('data')
+  const [tool, setTool]         = useState(TOOL_OPTIONS[0])
+  const [notes, setNotes]       = useState('')
+  const [saving, setSaving]     = useState(false)
+
+  async function submit() {
+    if (!name.trim() || !envVar.trim()) return
+    setSaving(true)
+    try {
+      await onAdd({ name: name.trim(), env_var: envVar.trim().toUpperCase().replace(/\s+/g, '_'), category, mapped_tool: tool, notes: notes.trim() || null })
+      onClose()
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(13,27,61,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div style={{ width: 460, background: 'var(--card-bg)', borderRadius: 12, boxShadow: '0 24px 60px rgba(0,0,0,0.25)', padding: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <p className="font-display uppercase" style={{ color: 'var(--ink-primary)', fontSize: 16, letterSpacing: '0.04em' }}>
+            Add Integration
+          </p>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-muted)' }}><X size={16} /></button>
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--ink-muted)', marginBottom: 18, lineHeight: 1.5 }}>
+          Register a new API connection and map it to the tool it powers. Add the actual secret value to <code style={{ fontFamily: 'var(--font-mono)', color: 'var(--apex)' }}>.env.local</code> yourself — secrets should never pass through a browser form.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <p style={{ fontSize: 11, color: 'var(--ink-muted)', marginBottom: 4 }}>Integration name</p>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Stripe, Twilio, Airtable"
+              style={{ width: '100%', padding: '8px 10px', background: 'var(--body-bg)', border: '1px solid var(--card-border)', borderRadius: 6, color: 'var(--ink-primary)', fontSize: 13 }} />
+          </div>
+          <div>
+            <p style={{ fontSize: 11, color: 'var(--ink-muted)', marginBottom: 4 }}>Env variable name</p>
+            <input value={envVar} onChange={e => setEnvVar(e.target.value)} placeholder="e.g. STRIPE_API_KEY"
+              style={{ width: '100%', padding: '8px 10px', background: 'var(--body-bg)', border: '1px solid var(--card-border)', borderRadius: 6, color: 'var(--ink-primary)', fontSize: 13, fontFamily: 'var(--font-mono)' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <p style={{ fontSize: 11, color: 'var(--ink-muted)', marginBottom: 4 }}>Category</p>
+              <select value={category} onChange={e => setCategory(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', background: 'var(--body-bg)', border: '1px solid var(--card-border)', borderRadius: 6, color: 'var(--ink-primary)', fontSize: 13 }}>
+                {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </div>
+            <div>
+              <p style={{ fontSize: 11, color: 'var(--ink-muted)', marginBottom: 4 }}>Maps to tool</p>
+              <select value={tool} onChange={e => setTool(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', background: 'var(--body-bg)', border: '1px solid var(--card-border)', borderRadius: 6, color: 'var(--ink-primary)', fontSize: 13 }}>
+                {TOOL_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <p style={{ fontSize: 11, color: 'var(--ink-muted)', marginBottom: 4 }}>Notes (optional)</p>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="What does this power? Any setup gotchas?"
+              style={{ width: '100%', padding: '8px 10px', resize: 'vertical', background: 'var(--body-bg)', border: '1px solid var(--card-border)', borderRadius: 6, color: 'var(--ink-primary)', fontSize: 13, lineHeight: 1.5 }} />
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+          <button onClick={onClose} className="font-display uppercase" style={{ padding: '8px 16px', borderRadius: 7, fontSize: 11, letterSpacing: '0.05em', background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--ink-muted)', cursor: 'pointer' }}>
+            Cancel
+          </button>
+          <button onClick={submit} disabled={saving || !name.trim() || !envVar.trim()} className="font-display uppercase"
+            style={{ padding: '8px 18px', borderRadius: 7, fontSize: 11, letterSpacing: '0.05em', background: 'var(--apex)', border: 'none', color: '#fff', cursor: saving ? 'wait' : 'pointer', opacity: (!name.trim() || !envVar.trim()) ? 0.5 : 1 }}>
+            {saving ? 'Adding…' : 'Add integration'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Reusable toggle ──────────────────────────────────────────────────────────
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
@@ -151,29 +240,52 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // INTEGRATIONS TAB
 // ─────────────────────────────────────────────────────────────────────────────
-function IntegrationsTab({ integrations }: { integrations: Integration[] }) {
-  const [expanded, setExpanded] = useState<string | null>(null)
-  const categories = [...new Set(integrations.map(i => i.category))]
+function IntegrationsTab({ integrations, customIntegrations, onAddCustom }: {
+  integrations: Integration[]
+  customIntegrations: CustomIntegration[]
+  onAddCustom: (entry: Omit<CustomIntegration, 'id'>) => Promise<void>
+}) {
+  const [expanded, setExpanded]       = useState<string | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+
+  const customAsIntegrations: Integration[] = customIntegrations.map(c => ({
+    id: `custom-${c.id}`, name: c.name, icon: Plug, envVar: c.env_var,
+    configured: false,
+    tools: [c.mapped_tool], category: c.category as Integration['category'],
+    setupUrl: '#', setupNote: c.notes ?? 'Custom integration — add the actual key to .env.local, then redeploy.',
+  }))
+  const allIntegrations = [...integrations, ...customAsIntegrations]
+  const categories = [...new Set(allIntegrations.map(i => i.category))]
 
   return (
+    <>
     <div className="space-y-8">
-      <div>
-        <h2 className="font-display" style={{ fontSize: 22, color: 'var(--ink-primary)', letterSpacing: '0.03em' }}>
-          CONNECTED INTEGRATIONS
-        </h2>
-        <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 4 }}>
-          Each integration unlocks specific tools in the workspace. Add env vars to{' '}
-          <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--apex)' }}>.env.local</code>{' '}
-          and redeploy.
-        </p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <h2 className="font-display" style={{ fontSize: 22, color: 'var(--ink-primary)', letterSpacing: '0.03em' }}>
+            CONNECTED INTEGRATIONS
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 4 }}>
+            Each integration unlocks specific tools in the workspace. Add env vars to{' '}
+            <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--apex)' }}>.env.local</code>{' '}
+            and redeploy.
+          </p>
+        </div>
+        <button onClick={() => setShowAddModal(true)} className="font-display uppercase" style={{
+          display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8,
+          fontSize: 11, letterSpacing: '0.06em', cursor: 'pointer', background: 'var(--apex)',
+          color: '#fff', border: 'none', flexShrink: 0, marginTop: 2,
+        }}>
+          <Plus size={13} /> Add integration
+        </button>
       </div>
 
       {/* Status summary */}
       <div style={{ display: 'flex', gap: 12 }}>
         {[
-          { label: 'Connected',      count: integrations.filter(i => i.configured).length,  color: 'var(--buildvance)' },
-          { label: 'Not configured', count: integrations.filter(i => !i.configured).length, color: 'var(--braik)'      },
-          { label: 'Total',          count: integrations.length,                             color: 'var(--apex)'       },
+          { label: 'Connected',      count: allIntegrations.filter(i => i.configured).length,  color: 'var(--buildvance)' },
+          { label: 'Not configured', count: allIntegrations.filter(i => !i.configured).length, color: 'var(--braik)'      },
+          { label: 'Total',          count: allIntegrations.length,                             color: 'var(--apex)'       },
         ].map(({ label, count, color }) => (
           <div key={label} className="card" style={{ padding: '10px 16px', flex: 1, textAlign: 'center' }}>
             <p className="font-display" style={{ color, fontSize: 24 }}>{count}</p>
@@ -188,7 +300,7 @@ function IntegrationsTab({ integrations }: { integrations: Integration[] }) {
             {CATEGORY_LABELS[cat]}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {integrations.filter(i => i.category === cat).map(integration => {
+            {allIntegrations.filter(i => i.category === cat).map(integration => {
               const Icon = integration.icon
               const isExpanded = expanded === integration.id
               return (
@@ -277,6 +389,10 @@ function IntegrationsTab({ integrations }: { integrations: Integration[] }) {
         </div>
       ))}
     </div>
+    {showAddModal && (
+      <AddIntegrationModal onClose={() => setShowAddModal(false)} onAdd={onAddCustom} />
+    )}
+    </>
   )
 }
 
@@ -358,7 +474,7 @@ function BrandScopeSettingsCard() {
   )
 }
 
-function WorkspaceTab({ sidebarItems }: { sidebarItems: SidebarItem[] }) {
+function WorkspaceTab() {
   const [thresholds, setThresholds] = useState({
     leads_open_days:      2,
     leads_contacted_days: 4,
@@ -385,34 +501,6 @@ function WorkspaceTab({ sidebarItems }: { sidebarItems: SidebarItem[] }) {
       </div>
 
       <BrandScopeSettingsCard />
-
-      {/* Sidebar customizer */}
-      <div className="card" style={{ padding: 20 }}>
-        <p className="font-display uppercase" style={{ color: 'var(--ink-primary)', fontSize: 14, letterSpacing: '0.06em', marginBottom: 4 }}>
-          Customize Sidebar
-        </p>
-        <p style={{ fontSize: 12, color: 'var(--ink-muted)', marginBottom: 16 }}>
-          Drag to reorder within each section, toggle visibility, and set brand accent per item.
-        </p>
-        {sidebarItems.length > 0 ? (
-          <SidebarCustomizer initialItems={sidebarItems} />
-        ) : (
-          <div className="space-y-2">
-            <p style={{ fontSize: 12, color: 'var(--ink-muted)' }}>
-              Run the following SQL in your Supabase SQL editor to enable sidebar customization:
-            </p>
-            <pre
-              style={{
-                padding: 12, borderRadius: 8, fontSize: 11, lineHeight: 1.7,
-                background: 'var(--body-bg)', border: '1px solid var(--card-border)',
-                color: 'var(--ink-secondary)', fontFamily: 'var(--font-mono)',
-              }}
-            >
-              {SIDEBAR_SETUP_SQL}
-            </pre>
-          </div>
-        )}
-      </div>
 
       {/* Action Needed thresholds */}
       <div className="card" style={{ padding: 20 }}>
@@ -948,9 +1036,21 @@ function DataTab({ userEmail }: { userEmail: string | undefined }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN SETTINGS CLIENT
 // ─────────────────────────────────────────────────────────────────────────────
-export default function SettingsClient({ user, envFlags, sidebarItems }: Props) {
-  const [activeTab, setActiveTab] = useState('integrations')
+export default function SettingsClient({ user, envFlags, customIntegrations: initialCustom }: Props) {
+  const [activeTab, setActiveTab]         = useState('integrations')
+  const [customIntegrations, setCustomIntegrations] = useState<CustomIntegration[]>(initialCustom)
   const integrations = makeIntegrations(envFlags)
+
+  async function handleAddCustom(entry: Omit<CustomIntegration, 'id'>) {
+    const supabase = createClient()
+    const { data, error } = await supabase.from('custom_integrations').insert(entry).select('*').single()
+    if (!error && data) {
+      setCustomIntegrations(prev => [...prev, data])
+      toast.success(`${entry.name} added — set ${entry.env_var} in .env.local to connect it`)
+    } else {
+      toast.error('Failed to add integration')
+    }
+  }
 
   return (
     <div>
@@ -995,8 +1095,8 @@ export default function SettingsClient({ user, envFlags, sidebarItems }: Props) 
       </div>
 
       {/* Tab content */}
-      {activeTab === 'integrations'  && <IntegrationsTab  integrations={integrations} />}
-      {activeTab === 'workspace'     && <WorkspaceTab     sidebarItems={sidebarItems} />}
+      {activeTab === 'integrations'  && <IntegrationsTab integrations={integrations} customIntegrations={customIntegrations} onAddCustom={handleAddCustom} />}
+      {activeTab === 'workspace'     && <WorkspaceTab />}
       {activeTab === 'notifications' && <NotificationsTab />}
       {activeTab === 'business'      && <BusinessProfileTab />}
       {activeTab === 'team'          && <TeamTab />}

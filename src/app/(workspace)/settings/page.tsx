@@ -4,8 +4,6 @@ import SettingsClient from './SettingsClient'
 export const metadata = { title: 'Config — Apex Workspace' }
 export const dynamic = 'force-dynamic'
 
-type AccentColor = 'apex' | 'buildvance' | 'braik'
-
 export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -20,20 +18,17 @@ export default async function SettingsPage() {
     hunter:    !!process.env.HUNTER_API_KEY,
   }
 
-  let sidebarItems: {
-    nav_key: string
-    label: string
-    sort_order: number
-    visible: boolean
-    accent_color: AccentColor
+  let customIntegrations: {
+    id: string; name: string; env_var: string
+    category: string; mapped_tool: string; notes: string | null
   }[] = []
 
   try {
     const { data } = await supabase
-      .from('sidebar_config')
-      .select('nav_key, label, sort_order, visible, accent_color')
-      .order('sort_order', { ascending: true })
-    if (data) sidebarItems = data as typeof sidebarItems
+      .from('custom_integrations')
+      .select('*')
+      .order('created_at', { ascending: true })
+    if (data) customIntegrations = data
   } catch {
     // Table not yet created — silently degrade
   }
@@ -42,7 +37,7 @@ export default async function SettingsPage() {
     <SettingsClient
       user={{ email: user?.email }}
       envFlags={envFlags}
-      sidebarItems={sidebarItems}
+      customIntegrations={customIntegrations}
     />
   )
 }

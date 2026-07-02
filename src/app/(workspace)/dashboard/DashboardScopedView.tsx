@@ -120,7 +120,7 @@ export default function DashboardScopedView(props: Props) {
       </div>
 
       <div className="card" style={{ padding: 14 }}>
-        <BrandLogoSwitcher size="large" />
+        <BrandLogoSwitcher />
       </div>
 
       {/* ── KPI strip ─────────────────────────────────────────────────────── */}
@@ -175,8 +175,12 @@ export default function DashboardScopedView(props: Props) {
               <Link href="/social" style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--apex)', fontSize: 10, fontFamily: 'var(--font-display)', textDecoration: 'none' }}><BarChart2 size={11} /> Social page</Link>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-              <Gauge value={socialScoreValue} label="social score" color={scope === 'all' ? 'var(--apex)' : scopeColor} />
-              <Gauge value={closeRate}        label="close rate"   color="var(--buildvance)" />
+              <Link href="/social" style={{ textDecoration: 'none' }}>
+                <Gauge value={socialScoreValue} label="social score" color={scope === 'all' ? 'var(--apex)' : scopeColor} />
+              </Link>
+              <Link href="/pipeline" style={{ textDecoration: 'none' }}>
+                <Gauge value={closeRate} label="close rate" color="var(--buildvance)" />
+              </Link>
             </div>
           </div>
         </div>
@@ -186,9 +190,14 @@ export default function DashboardScopedView(props: Props) {
       <div className="card" style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <SectionLabel>Activity — 7 days</SectionLabel>
-          <span style={{ color: 'var(--ink-muted)', fontSize: 10, fontFamily: 'var(--font-display)' }}>
-            {scope === 'all' ? 'both brands' : scope}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ color: 'var(--ink-muted)', fontSize: 10, fontFamily: 'var(--font-display)' }}>
+              {scope === 'all' ? 'both brands' : scope}
+            </span>
+            <Link href="/reports" style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--apex)', fontSize: 10, fontFamily: 'var(--font-display)', textDecoration: 'none' }}>
+              Full reports <ArrowRight size={10} />
+            </Link>
+          </div>
         </div>
         <ActivityChart data={scopedActivity} />
       </div>
